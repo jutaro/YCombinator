@@ -176,26 +176,26 @@
 > subtermReflexive : {t: Type} -> {a : Term t} -> Subterm a a
 > subtermReflexive = SubtermEq
 
-> contra1 : {t: Type} -> {l, r : Term t} -> Subterm (App l r) l -> Void
-> contra1 SubtermEq impossible
-> contra1 (SubtermAppL p) = ?hole0
-
 > subtermAnitsymmetric : {t: Type} -> {n, m : Term t} -> Subterm m n -> Subterm n m -> n = m
 > subtermAnitsymmetric SubtermEq _ = Refl
 > subtermAnitsymmetric _ SubtermEq = Refl
-> subtermAnitsymmetric (SubtermAppL p) (SubtermAppL p2) =
->   let constr = subtermInAppL p
->       constr2 = subtermInAppL p2
->   in ?hole
-> subtermAnitsymmetric (SubtermAppL p1) (SubtermAppR p2) = ?hole2
-> subtermAnitsymmetric (SubtermAppR p1) (SubtermAppL p2) = ?hole3
-> subtermAnitsymmetric (SubtermAppR p1) (SubtermAppR p2) = ?hole4
-
-
+> subtermAnitsymmetric {n = App l r} {m = App l' r} (SubtermAppL p1) (SubtermAppL p2) =
+>   let indHyp = subtermAnitsymmetric {n=l} {m=l'} (subtermInAppL p1) (subtermInAppL p2)
+>   in rewrite indHyp in Refl
+> subtermAnitsymmetric {n = App l r} {m = App l r'}(SubtermAppR p1) (SubtermAppR p2) =
+>   let indHyp = subtermAnitsymmetric {n=r} {m=r'} (subtermInAppR p1) (subtermInAppR p2)
+>   in rewrite indHyp in Refl
+> subtermAnitsymmetric {n = App l r} {m = App l r} (SubtermAppR p1) (SubtermAppL p2) =
+>   let indHyp = subtermAnitsymmetric {n=r} {m= l} (subtermInAppL p1) (subtermInAppR p2)
+>   in rewrite indHyp in Refl
+> subtermAnitsymmetric {n = App l r} {m = App l r} (SubtermAppL p1) (SubtermAppR p2) =
+>   let indHyp = subtermAnitsymmetric {n=l} {m= r} (subtermInAppR p1) (subtermInAppL p2)
+>   in rewrite indHyp in Refl
 
 
 Proof that subterm implement Subterm? How to do this?
 
+> {-
 
 -- > subtermLemma : {t : Type} -> DecEq t =>(a : Term t) ->  {prf : Dec (a = a)} ->subterm' a a prf = True
 -- > subtermLemma  x {prf = Yes eqPrf} = Refl
@@ -230,6 +230,8 @@ So they give the result, but we can't proof them equal
 > subtermComplete {a} {b=App l r} (No p) hyp =
 >   let indHyp1 = subtermComplete {a} {b=l} (decEq a l) ?hole0
 >       indHyp2 = subtermComplete {a} {b=r} (decEq a r) ?hole1
->   in ?hole2
+>   in ?subtermComplete
 > subtermComplete {a} {b=Var _} (No p) hyp = absurd hyp
 > subtermComplete {a} {b=Base _} (No p) hyp = absurd hyp
+
+> -}
