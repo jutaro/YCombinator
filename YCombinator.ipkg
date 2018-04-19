@@ -1,7 +1,9 @@
-package software_foundations
+package YCombinator
 
-modules    = SKI
-main       =
+modules    = Base,
+             Term
+
+main       = Term
 
 brief      = "Research on combinatory logic and type systems"
 version    = 0.0.1.0
@@ -12,9 +14,9 @@ author     = "Jürgen Nicklisch (jutaro)"
 maintainer = "Jürgen Nicklisch <jnf@arcor.de>"
 
 homepage   =
-sourceloc  = git://git@github.com:jutaro/YCombinator.git
+sourceloc  = https://github.com/jutaro/YCombinator
 bugtracker = https://github.com/jutaro/YCombinator/issues
 
 sourcedir  = src
 opts       = "--check --total"
-pkgs       =
+-- pkgs       =
