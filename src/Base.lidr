@@ -46,3 +46,26 @@
 >   show I = ":I"
 >   show K = ":K"
 >   show S = ":S"
+
+> data MT : Type where
+>   M : MT
+>   B : MT
+
+> implementation Eq MT where
+>   M == M = True
+>   B == B = True
+>   _ == _ = False
+
+> bNotM : B = M -> Void
+> bNotM Refl impossible
+
+> implementation DecEq MT where
+>   decEq M M = Yes Refl
+>   decEq B B = Yes Refl
+>   decEq B M = No bNotM
+>   decEq M B = No (negEqSym bNotM)
+
+
+> implementation Show MT where
+>   show M = ":M"
+>   show B = ":B"

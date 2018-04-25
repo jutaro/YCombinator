@@ -1,7 +1,8 @@
 package YCombinator
 
 modules    = Base,
-             Term
+             Term,
+             Reduce
 
 main       = Term
 

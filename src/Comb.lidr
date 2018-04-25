@@ -1,6 +1,6 @@
-= Term : Terms for Combinators
+= Comb : Combs for PrimCombinators
 
-> module Term
+> module Comb
 > import Base
 
 > import Decidable.Equality
@@ -11,82 +11,87 @@
 > %access public export
 > %default total
 
-> data Term : (base: Type) -> Type where
->   Comb : base -> Term base
->   Var : String -> Term base
->   App : Term base -> Term base -> Term base
+> data Comb : (base: Type) -> Type where
+>   PrimComb : base -> Comb base
+>   Var : String -> Comb base
+>   App : Comb base -> Comb base -> Comb base
 
 > infixl 9 #
 
-> (#) : Term base -> Term base -> Term base
+> (#) : Comb base -> Comb base -> Comb base
 > (#) l r = App l r
 
-> syntax ":I" = Comb I;
-> syntax ":K" = Comb K;
-> syntax ":S" = Comb S;
-> syntax "~ [var] "   = Var var;
+> syntax ":I" = PrimComb I;
+> syntax ":K" = PrimComb K;
+> syntax ":S" = PrimComb S;
+> syntax ":M" = PrimComb M;
+> syntax ":B" = PrimComb B;
+> syntax "$"[var] = Var var;
 
-> implementation (Eq t) => Eq (Term t) where
->   (Comb a)  == (Comb b)  = a == b
+
+> implementation (Eq t) => Eq (Comb t) where
+>   (PrimComb a)  == (PrimComb b)  = a == b
 >   (Var a)   == (Var b)   = a == b
 >   (App a b) == (App c d) = a == c && b == d
 >   _         == _         = False
 
-> implementation (Show t) => Show (Term t) where
->   show (Comb c) = "-" ++ show c
->   show (Var a) = ":" ++a
+> implementation (Show t) => Show (Comb t) where
+>   show (PrimComb c) = ":" ++ show c
+>   show (Var a) = "(Var " ++ a ++ ")"
 >   show (App a b) = "(" ++ show a ++ " # " ++ show b ++ ")"
 
 > varInjective : {a, b : String} -> Var a = Var b -> a = b
 > varInjective Refl = Refl
 
-> baseInjective : {a, b : t} -> Comb a = Comb b -> a = b
+> baseInjective : {a, b : t} -> PrimComb a = PrimComb b -> a = b
 > baseInjective Refl = Refl
 
-> appCongruent : {a, b, c, d : Term t} -> a = c -> b = d -> App a b = App c d
+> appCongruent : {a, b, c, d : Comb t} -> a = c -> b = d -> App a b = App c d
 > appCongruent Refl Refl = Refl
 
-> appInjective : {a, b, c, d : Term t}  -> App a b = App c d -> (a = c, b = d)
+> appInjective : {a, b, c, d : Comb t}  -> App a b = App c d -> (a = c, b = d)
 > appInjective Refl = (Refl,Refl)
 
-> varNotComb : {a : String} -> Var a = Comb t -> Void
-> varNotComb Refl impossible
+> varNotPrimComb : {a : String} -> Var a = PrimComb t -> Void
+> varNotPrimComb Refl impossible
 
-> varNotApp : {a : String} -> {l, r : Term t} -> Var a = App l r -> Void
+> varNotApp : {a : String} -> {l, r : Comb t} -> Var a = App l r -> Void
 > varNotApp Refl impossible
 
-> baseNotApp : Comb t = App l r -> Void
+> baseNotApp : PrimComb t = App l r -> Void
 > baseNotApp Refl impossible
 
-> implementation (DecEq t) => DecEq (Term t) where
+> implementation (DecEq t) => DecEq (Comb t) where
 >   decEq (Var a) (Var b) with (decEq a b)
 >     | Yes p = Yes $ cong p
 >     | No p  = No $ \h : Var a = Var b => p (varInjective h)
->   decEq (Comb a) (Comb b) with (decEq a b)
+>   decEq (PrimComb a) (PrimComb b) with (decEq a b)
 >     | Yes p = Yes $ cong p
->     | No p  = No $ \h : Comb a = Comb b => p (baseInjective h)
+>     | No p  = No $ \h : PrimComb a = PrimComb b => p (baseInjective h)
+
 >   decEq (App a b) (App c d) with (decEq a c)
 >     decEq (App a b) (App c d) | Yes p with (decEq b d)
 >       decEq (App a b) (App c d) | Yes p | Yes p' = Yes $ appCongruent p p'
 >       decEq (App a b) (App c d) | Yes p | No p' =  No $ \h : App a b = App c d => p' (snd (appInjective h))
 >     decEq (App a b) (App c d) | No p = No $ \h : App a b = App c d => p (fst (appInjective h))
->   decEq (Var a) (Comb t) = No varNotComb
->   decEq (Var a) (App l r) = No varNotApp
->   decEq (Comb t) (Var b) = No (negEqSym varNotComb)
->   decEq (Comb t) (App l r) = No (baseNotApp)
->   decEq (App l r) (Var a) = No (negEqSym varNotApp)
->   decEq (App l r) (Comb t) = No (negEqSym baseNotApp)
 
-> subterm' : {t : Type} -> DecEq t => (t1 : Term t) -> (t2 : Term t) -> Dec (t1 = t2) -> Bool
+>   decEq (Var a) (PrimComb t) = No varNotPrimComb
+>   decEq (Var a) (App l r) = No varNotApp
+>   decEq (PrimComb t) (Var b) = No (negEqSym varNotPrimComb)
+>   decEq (PrimComb t) (App l r) = No (baseNotApp)
+>   decEq (App l r) (Var a) = No (negEqSym varNotApp)
+>   decEq (App l r) (PrimComb t) = No (negEqSym baseNotApp)
+
+> subterm' : {t : Type} -> DecEq t => (t1 : Comb t) -> (t2 : Comb t) -> Dec (t1 = t2) -> Bool
 > subterm' a b (Yes _) = True
 > subterm' a b (No  _) = case b of
 >                 (App l r) => subterm' a l (decEq a l) || subterm' a r (decEq a r)
 >                 _ => False
 
-> subterm : {t : Type} -> DecEq t => (t1 : Term t) -> (t2 : Term t) -> Bool
+> subterm : {t : Type} -> DecEq t => (t1 : Comb t) -> (t2 : Comb t) -> Bool
 > subterm a b = subterm' a b (decEq a b)
 
-> data Subterm : Term b -> Term b -> Type where
+> data Subterm : Comb b -> Comb b -> Type where
 >   SubtermEq : Subterm x x
 >   SubtermAppL : Subterm x l -> Subterm x (l # r)
 >   SubtermAppR : Subterm x r -> Subterm x (l # r)
@@ -115,7 +120,7 @@
 >   let indHyp = subtermInAppR pl
 >   in SubtermAppL indHyp
 
-> subtermTransitive : {t: Type} -> {a, b, c : Term t} -> Subterm a b -> Subterm b c -> Subterm a c
+> subtermTransitive : {t: Type} -> {a, b, c : Comb t} -> Subterm a b -> Subterm b c -> Subterm a c
 > subtermTransitive SubtermEq SubtermEq = SubtermEq
 > subtermTransitive SubtermEq r = r
 > subtermTransitive l SubtermEq = l
@@ -136,10 +141,10 @@
 >       indHyp = subtermTransitive {a=a} {b=bl} {c=cr} pl pr'
 >   in SubtermAppR indHyp
 
-> subtermReflexive : {t: Type} -> {a : Term t} -> Subterm a a
+> subtermReflexive : {t: Type} -> {a : Comb t} -> Subterm a a
 > subtermReflexive = SubtermEq
 
-> subtermAnitsymmetric : {t: Type} -> {n, m : Term t} -> Subterm m n -> Subterm n m -> n = m
+> subtermAnitsymmetric : {t: Type} -> {n, m : Comb t} -> Subterm m n -> Subterm n m -> n = m
 > subtermAnitsymmetric SubtermEq _ = Refl
 > subtermAnitsymmetric _ SubtermEq = Refl
 > subtermAnitsymmetric {n = App l r} {m = App l' r'} (SubtermAppL p1) (SubtermAppL p2) =
@@ -164,14 +169,14 @@ Proof that subterm implement Subterm? How to do this?
 
 > {-
 
--- > subtermLemma : {t : Type} -> DecEq t =>(a : Term t) ->  {prf : Dec (a = a)} ->subterm' a a prf = True
+-- > subtermLemma : {t : Type} -> DecEq t =>(a : Comb t) ->  {prf : Dec (a = a)} ->subterm' a a prf = True
 -- > subtermLemma  x {prf = Yes eqPrf} = Refl
 -- > subtermLemma  x {prf = No contra} = void (contra (Refl))
 
 We have the problem that Subterm may point to a right subterm, while the algorithm always detects the leftmost subterm.
 So they give the result, but we can't proof them equal
 
-> subtermCorrect : {t : Type} -> (DecEq t) => {a, b: Term t} -> (prf: Dec (a = b)) -> Subterm a b -> subterm' a b prf = True
+> subtermCorrect : {t : Type} -> (DecEq t) => {a, b: Comb t} -> (prf: Dec (a = b)) -> Subterm a b -> subterm' a b prf = True
 > subtermCorrect {a=term} {b=term} (Yes p) SubtermEq = Refl
 > subtermCorrect {a=term} {b=term} (No contra) SubtermEq = void (contra Refl)
 > subtermCorrect {a=term} {b=App l r} (No contra) (SubtermAppL lp) =
@@ -191,7 +196,7 @@ So they give the result, but we can't proof them equal
 > lemma {a = False} {b = True} prf = Right prf
 > lemma {a = False} {b = False} Refl impossible
 
-> subtermComplete : {t : Type} -> (DecEq t) => {a, b: Term t} -> (prf : Dec (a = b))
+> subtermComplete : {t : Type} -> (DecEq t) => {a, b: Comb t} -> (prf : Dec (a = b))
 >                                                 -> (hyp : subterm' a b prf = True) -> Subterm a b
 > subtermComplete {a} {b} (Yes p) hyp = rewrite p in SubtermEq
 > subtermComplete {a} {b=App l r} (No p) hyp =
@@ -199,6 +204,6 @@ So they give the result, but we can't proof them equal
 >       indHyp2 = subtermComplete {a} {b=r} (decEq a r) ?hole1
 >   in ?subtermComplete
 > subtermComplete {a} {b=Var _} (No p) hyp = absurd hyp
-> subtermComplete {a} {b=Comb _} (No p) hyp = absurd hyp
+> subtermComplete {a} {b=PrimComb _} (No p) hyp = absurd hyp
 
 > -}
