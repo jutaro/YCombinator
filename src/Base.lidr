@@ -6,8 +6,6 @@
 > import Decidable.Equality
 
 > %hide Language.Reflection.I
-> %hide Language.Reflection.Var
-
 > %access public export
 > %default total
 
@@ -115,7 +113,6 @@ Test code
 
 > stepPrf2 : StepIKS (:S # (:K # §"x") # :I # :S # (:I # :K)) (((:K # §"x") # :S) # (:I # :S) # (:I # :K))
 > stepPrf2 = RecStep SStep
-
 
 > subtermTest1 : Subterm (:K # :S) ((:K # :S) # :I)
 > subtermTest1 = SubtermAppL $ SubtermEq

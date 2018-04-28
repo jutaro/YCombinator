@@ -4,9 +4,6 @@
 
 > import Decidable.Equality
 
-> %hide Language.Reflection.I
-> %hide Language.Reflection.Var
-
 > %access public export
 > %default total
 
@@ -164,26 +161,37 @@
 > interface Reduce b where
 >   reduceStep : Comb b -> Maybe (Comb b)
 
+> stepHead : Reduce b => Comb b -> Maybe (Comb b)
+> stepHead (Var a)            = Nothing
+> stepHead (PrimComb i)       = Nothing
+> stepHead a@(App head redex) = case reduceStep a of
+>                                 Nothing =>  case stepHead head of
+>                                               Nothing => Nothing
+>                                               Just t => Just (App t redex)
+>                                 Just t => Just t
+
 > step : Reduce b => Comb b -> Maybe (Comb b)
 > step (Var a)            = Nothing
 > step (PrimComb i)       = Nothing
 > step a@(App head redex) = case reduceStep a of
 >                             Nothing =>  case step head of
->                                           Nothing => Nothing
->                                           Just t => Just (App t redex)
+>                                           Nothing => case step redex of
+>                                                           Nothing => Nothing
+>                                                           Just r => Just (App head r)
+>                                           Just h => Just (App h redex)
 >                             Just t => Just t
 
 -- Reduction strategies
 
 > partial weakHeadReduction : Reduce b => Comb b -> Comb b
 > weakHeadReduction term =
->   case step term of
+>   case stepHead term of
 >     Nothing => term
 >     Just newComb => weakHeadReduction newComb
 
 > weakHeadReductionCut : Reduce b => Nat -> Comb b -> Maybe (Comb b)
 > weakHeadReductionCut (S x) term =
->   case step term of
+>   case stepHead term of
 >     Nothing => Just term
 >     Just newComb => weakHeadReductionCut x newComb
 > weakHeadReductionCut Z term = Nothing
@@ -194,15 +202,31 @@
 >       Nothing => c
 >       Just t => t
 
-> reduxEquals : (Reduce b) => (a : Comb b) -> whr a = a
-> reduxEquals a = believe_me (whr a = a)
+> partial reduction : Reduce b => Comb b -> Comb b
+> reduction term =
+>   case step term of
+>     Nothing => term
+>     Just newComb => reduction newComb
+
+> reductionCut : Reduce b => Nat -> Comb b -> Maybe (Comb b)
+> reductionCut (S x) term =
+>   case step term of
+>     Nothing => Just term
+>     Just newComb => reductionCut x newComb
+> reductionCut Z term = Nothing
+
+> reduct : Reduce b => Comb b -> Comb b
+> reduct c =
+>   case reductionCut 1000 c of
+>       Nothing => c
+>       Just t => t
 
 > implementation (StructEq (Comb b), Reduce b) => DecEq (Comb b) where
 >   decEq l r =
 >     case structEq l r of
 >       Yes p =>  Yes $ p
->       No p  =>  let l' = whr l
->                     r' = whr r
+>       No p  =>  let l' = reduct l
+>                     r' = reduct r
 >                 in case structEq l' r' of
 >                   Yes p1 => let hyp : (l = r) = believe_me p1
 >                             in Yes $ hyp

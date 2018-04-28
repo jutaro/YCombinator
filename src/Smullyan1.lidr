@@ -22,7 +22,7 @@ Smullyan : Exercises from Mock a Mockingbird
 >   in (cc ** case decEq (a # cc) cc of
 >               _ => ?hole1 )
 
-> lemma1 : (a : Comb MT) -> whr ((:B # a # :M) # (:B # a # :M)) = ?h0
+> lemma1 : (a : Comb MT) -> reduct ((:B # a # :M) # (:B # a # :M)) = ?h0
 > lemma1 a = ?h
 
 > -- rumor1 (PrimComb pc) = \ b => ?hole

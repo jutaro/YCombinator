@@ -4,7 +4,7 @@ modules    = Combinator,
              Base,
              Smullyan1
 
-main       = Term
+main       = Smullyan1
 
 brief      = "Research on combinatory logic and type systems"
 version    = 0.0.1.0
