@@ -1,8 +1,9 @@
 package YCombinator
 
-modules    = Base,
-             Term,
-             Reduce
+modules    = Term,
+             Combinator,
+             Base,
+             Smullyan1
 
 main       = Term
 

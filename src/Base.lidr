@@ -1,7 +1,9 @@
 = Base : Combinator Bases
 
-> module SKI
-> import Debug.Trace
+> module Base
+
+> import Term
+> import Combinator
 > import Decidable.Equality
 
 > %hide Language.Reflection.I
@@ -15,6 +17,22 @@
 >   I : IKS
 >   K : IKS
 >   S : IKS
+
+> syntax ":I" = Comb (PrimComb I);
+> syntax ":K" = Comb (PrimComb K);
+> syntax ":S" = Comb (PrimComb S);
+
+> implementation Reduce IKS where
+>   reduceStep (App (PrimComb I) x) = Just x
+>   reduceStep (App (App (PrimComb K) x) y) = Just x
+>   reduceStep (App (App (App (PrimComb S) x) y) z) = Just ((x ## z) ## (y ## z))
+>   reduceStep _ = Nothing
+
+> data StepIKS : Term IKS -> Term IKS -> Type where
+>   IStep   : StepIKS ((PrimComb I) ## x) x
+>   KStep   : StepIKS ((PrimComb K) ## x ## y) x
+>   SStep   : StepIKS ((PrimComb S) ## x ## y ## z) ((x ## z) ## (y ## z))
+>   RecStep : StepIKS l res -> StepIKS (l ## r) (res ## r)
 
 > implementation Eq IKS where
 >   I == I = True
@@ -47,9 +65,23 @@
 >   show K = ":K"
 >   show S = ":S"
 
+A base with M and B
+
 > data MT : Type where
 >   M : MT
 >   B : MT
+
+> syntax ":M" = Comb (PrimComb M);
+> syntax ":B" = Comb (PrimComb B);
+
+> implementation Reduce MT where
+>   reduceStep (App (PrimComb M) x) = Just (x ## x)
+>   reduceStep _ = Nothing
+
+> data StepMT : Term MT -> Term MT -> Type where
+>   MStep   : StepMT ((PrimComb M) ## x) (x ## x)
+>   BStep   : StepMT ((PrimComb B) ## x ## y ## z) (x ## (y ## z))
+>   MTRecStep : StepMT l res -> StepMT (l ## r) (res ## r)
 
 > implementation Eq MT where
 >   M == M = True
@@ -65,7 +97,30 @@
 >   decEq B M = No bNotM
 >   decEq M B = No (negEqSym bNotM)
 
-
 > implementation Show MT where
 >   show M = ":M"
 >   show B = ":B"
+
+Test code
+
+>
+> stepTest1 : whr (:K # :S # :I) = :S
+> stepTest1 = Refl
+
+> {-}
+> stepPrf1 : StepIKS (:K # :S # :I) :S
+> stepPrf1 = KStep
+
+> stepTest2 : step (:S # (:K # $"x") # :I # :S # (:I # :K)) = Just (((:K # $"x") #  :S) # (:I # :S) # (:I # :K))
+> stepTest2 = Refl
+
+> stepPrf2 : StepIKS (:S # (:K # $"x") # :I # :S # (:I # :K)) (((:K # $"x") # :S) # (:I # :S) # (:I # :K))
+> stepPrf2 = RecStep SStep
+
+
+> subtermTest1 : Subterm (:K # :S) ((:K # :S) # :I)
+> subtermTest1 = SubtermAppL $ SubtermEq
+
+> subtermTest1' : subterm (:K # :S) ((:K # :S) # :I) = True
+> subtermTest1' = Refl
+> -}
