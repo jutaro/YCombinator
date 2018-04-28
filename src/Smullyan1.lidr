@@ -2,7 +2,6 @@ Smullyan : Exercises from Mock a Mockingbird
 
 > module Reduce
 
-> import Term
 > import Combinator
 > import Base
 
@@ -21,10 +20,10 @@ Smullyan : Exercises from Mock a Mockingbird
 >   let c  = :B # a # :M
 >       cc = c # c
 >   in (cc ** case decEq (a # cc) cc of
->               Yes prf => prf
->               No prf => ?hole)
+>               _ => ?hole1 )
 
-
+> lemma1 : (a : Comb MT) -> whr ((:B # a # :M) # (:B # a # :M)) = ?h0
+> lemma1 a = ?h
 
 > -- rumor1 (PrimComb pc) = \ b => ?hole
 > -- rumor1 (Var vn) = ?hole1

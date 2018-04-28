@@ -2,7 +2,6 @@
 
 > module Base
 
-> import Term
 > import Combinator
 > import Decidable.Equality
 
@@ -18,21 +17,21 @@
 >   K : IKS
 >   S : IKS
 
-> syntax ":I" = Comb (PrimComb I);
-> syntax ":K" = Comb (PrimComb K);
-> syntax ":S" = Comb (PrimComb S);
+> syntax ":I" = PrimComb I;
+> syntax ":K" = PrimComb K;
+> syntax ":S" = PrimComb S;
 
 > implementation Reduce IKS where
 >   reduceStep (App (PrimComb I) x) = Just x
 >   reduceStep (App (App (PrimComb K) x) y) = Just x
->   reduceStep (App (App (App (PrimComb S) x) y) z) = Just ((x ## z) ## (y ## z))
+>   reduceStep (App (App (App (PrimComb S) x) y) z) = Just ((x # z) # (y # z))
 >   reduceStep _ = Nothing
 
-> data StepIKS : Term IKS -> Term IKS -> Type where
->   IStep   : StepIKS ((PrimComb I) ## x) x
->   KStep   : StepIKS ((PrimComb K) ## x ## y) x
->   SStep   : StepIKS ((PrimComb S) ## x ## y ## z) ((x ## z) ## (y ## z))
->   RecStep : StepIKS l res -> StepIKS (l ## r) (res ## r)
+> data StepIKS : Comb IKS -> Comb IKS -> Type where
+>   IStep   : {x: Comb IKS} -> StepIKS (:I # x) x
+>   KStep   : {x, y: Comb IKS} -> StepIKS (:K # x # y) x
+>   SStep   : {x, y, z: Comb IKS} -> StepIKS (:S # x # y # z) ((x # z) # (y # z))
+>   RecStep : StepIKS l res -> StepIKS (l # r) (res # r)
 
 > implementation Eq IKS where
 >   I == I = True
@@ -71,17 +70,18 @@ A base with M and B
 >   M : MT
 >   B : MT
 
-> syntax ":M" = Comb (PrimComb M);
-> syntax ":B" = Comb (PrimComb B);
+> syntax ":M" = PrimComb M;
+> syntax ":B" = PrimComb B;
 
 > implementation Reduce MT where
->   reduceStep (App (PrimComb M) x) = Just (x ## x)
+>   reduceStep (App (PrimComb M) x) = Just (x # x)
+>   reduceStep (App (App (App (PrimComb b) x) y) z) = Just (x # (y # z))
 >   reduceStep _ = Nothing
 
-> data StepMT : Term MT -> Term MT -> Type where
->   MStep   : StepMT ((PrimComb M) ## x) (x ## x)
->   BStep   : StepMT ((PrimComb B) ## x ## y ## z) (x ## (y ## z))
->   MTRecStep : StepMT l res -> StepMT (l ## r) (res ## r)
+> data StepMT : Comb MT -> Comb MT -> Type where
+>   MStep   : StepMT (:M # x) (x # x)
+>   BStep   : StepMT (:B # x # y # z) (x # (y # z))
+>   MTRecStep : StepMT l res -> StepMT (l # r) (res # r)
 
 > implementation Eq MT where
 >   M == M = True
@@ -107,14 +107,13 @@ Test code
 > stepTest1 : whr (:K # :S # :I) = :S
 > stepTest1 = Refl
 
-> {-}
 > stepPrf1 : StepIKS (:K # :S # :I) :S
 > stepPrf1 = KStep
 
-> stepTest2 : step (:S # (:K # $"x") # :I # :S # (:I # :K)) = Just (((:K # $"x") #  :S) # (:I # :S) # (:I # :K))
+> stepTest2 : step (:S # (:K # §"x") # :I # :S # (:I # :K)) = Just (((:K # §"x") #  :S) # (:I # :S) # (:I # :K))
 > stepTest2 = Refl
 
-> stepPrf2 : StepIKS (:S # (:K # $"x") # :I # :S # (:I # :K)) (((:K # $"x") # :S) # (:I # :S) # (:I # :K))
+> stepPrf2 : StepIKS (:S # (:K # §"x") # :I # :S # (:I # :K)) (((:K # §"x") # :S) # (:I # :S) # (:I # :K))
 > stepPrf2 = RecStep SStep
 
 
@@ -123,4 +122,3 @@ Test code
 
 > subtermTest1' : subterm (:K # :S) ((:K # :S) # :I) = True
 > subtermTest1' = Refl
-> -}

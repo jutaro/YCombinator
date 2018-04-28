@@ -1,7 +1,6 @@
 package YCombinator
 
-modules    = Term,
-             Combinator,
+modules    = Combinator,
              Base,
              Smullyan1
 
