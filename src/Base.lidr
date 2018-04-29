@@ -26,10 +26,12 @@
 >   reduceStep _ = Nothing
 
 > data StepIKS : Comb IKS -> Comb IKS -> Type where
->   IStep   : {x: Comb IKS} -> StepIKS (:I # x) x
->   KStep   : {x, y: Comb IKS} -> StepIKS (:K # x # y) x
->   SStep   : {x, y, z: Comb IKS} -> StepIKS (:S # x # y # z) ((x # z) # (y # z))
->   RecStep : StepIKS l res -> StepIKS (l # r) (res # r)
+>   IKSStepI   :  {x: Comb IKS} -> StepIKS (:I # x) x
+>   IKSStepK   :  {x, y: Comb IKS} -> StepIKS (:K # x # y) x
+>   IKSStepS   :  {x, y, z: Comb IKS} -> StepIKS (:S # x # y # z) ((x # z) # (y # z))
+>   IKSAppL    :  StepIKS l res -> StepIKS (l # r) (res # r)
+>   IKSAppR    :  StepIKS r res -> StepIKS (l # r) (l # res)
+>   IKSSteps   :  StepIKS c1 c2 -> StepIKS c2 c3 -> StepIKS c1 c3
 
 > implementation Eq IKS where
 >   I == I = True
@@ -64,24 +66,29 @@
 
 A base with M and B
 
-> data MT : Type where
->   M : MT
->   B : MT
+> data MB : Type where
+>   M : MB
+>   B : MB
 
 > syntax ":M" = PrimComb M;
 > syntax ":B" = PrimComb B;
 
-> implementation Reduce MT where
+> implementation Reduce MB where
 >   reduceStep (App (PrimComb M) x) = Just (x # x)
 >   reduceStep (App (App (App (PrimComb b) x) y) z) = Just (x # (y # z))
 >   reduceStep _ = Nothing
 
-> data StepMT : Comb MT -> Comb MT -> Type where
->   MStep   : StepMT (:M # x) (x # x)
->   BStep   : StepMT (:B # x # y # z) (x # (y # z))
->   MTRecStep : StepMT l res -> StepMT (l # r) (res # r)
+> data StepMB : Comb MB -> Comb MB -> Type where
+>   MBStepM   : StepMB (:M # x) (x # x)
+>   MBStepB   : StepMB (:B # x # y # z) (x # (y # z))
+>   MBAppL    : StepMB l res -> StepMB (l # r) (res # r)
+>   MBAppR    : StepMB r res -> StepMB (l # r) (l # res)
+>   MBSteps   : StepMB c1 c2 -> StepMB c2 c3 -> StepMB c1 c3
 
-> implementation Eq MT where
+> eqStepMB : {a,b : Comb MB} -> StepMB a b -> a = b
+> eqStepMB step = believe_me step
+
+> implementation Eq MB where
 >   M == M = True
 >   B == B = True
 >   _ == _ = False
@@ -89,13 +96,13 @@ A base with M and B
 > bNotM : B = M -> Void
 > bNotM Refl impossible
 
-> implementation DecEq MT where
+> implementation DecEq MB where
 >   decEq M M = Yes Refl
 >   decEq B B = Yes Refl
 >   decEq B M = No bNotM
 >   decEq M B = No (negEqSym bNotM)
 
-> implementation Show MT where
+> implementation Show MB where
 >   show M = ":M"
 >   show B = ":B"
 
@@ -106,13 +113,13 @@ Test code
 > stepTest1 = Refl
 
 > stepPrf1 : StepIKS (:K # :S # :I) :S
-> stepPrf1 = KStep
+> stepPrf1 = IKSStepK
 
 > stepTest2 : step (:S # (:K # §"x") # :I # :S # (:I # :K)) = Just (((:K # §"x") #  :S) # (:I # :S) # (:I # :K))
 > stepTest2 = Refl
 
 > stepPrf2 : StepIKS (:S # (:K # §"x") # :I # :S # (:I # :K)) (((:K # §"x") # :S) # (:I # :S) # (:I # :K))
-> stepPrf2 = RecStep SStep
+> stepPrf2 = IKSAppL IKSStepS
 
 > subtermTest1 : Subterm (:K # :S) ((:K # :S) # :I)
 > subtermTest1 = SubtermAppL $ SubtermEq

@@ -27,8 +27,8 @@
 >   _         == _         = False
 
 > implementation (Show t) => Show (Comb t) where
->   show (PrimComb c) = ":" ++ show c
->   show (Var a) = "(Var " ++ a ++ ")"
+>   show (PrimComb c) = show c
+>   show (Var a) = "Var " ++ a
 >   show (App a b) = "(" ++ show a ++ " # " ++ show b ++ ")"
 
 > varInjective : {a, b : String} -> Var a = Var b -> a = b
@@ -217,7 +217,7 @@
 
 > reduct : Reduce b => Comb b -> Comb b
 > reduct c =
->   case reductionCut 1000 c of
+>   case reductionCut 100 c of
 >       Nothing => c
 >       Just t => t
 
@@ -232,7 +232,6 @@
 >                             in Yes $ hyp
 >                   No p1 =>  let hyp : ((l = r) -> Void) = believe_me p1
 >                             in No $ (\ h : l = r => hyp h)
-
 
 
 Proof that subterm implement Subterm? How to do this?

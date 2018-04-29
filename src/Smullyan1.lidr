@@ -15,18 +15,10 @@ Smullyan : Exercises from Mock a Mockingbird
 > data FondOf : (t : Type) -> Reduce t => (a : Comb t) -> (b : Comb t) -> (prf: b = a # b) -> Type where
 >   Fond : Reduce t => FondOf t a b prf
 
-> rumor1 : DecEq (Comb MT) => (a: Comb MT) -> (b : Comb MT ** a # b = b)
-> rumor1 a =
->   let c  = :B # a # :M
->       cc = c # c
->   in (cc ** case decEq (a # cc) cc of
->               _ => ?hole1 )
-
-> lemma1 : (a : Comb MT) -> reduct ((:B # a # :M) # (:B # a # :M)) = ?h0
-> lemma1 a = ?h
-
-> -- rumor1 (PrimComb pc) = \ b => ?hole
-> -- rumor1 (Var vn) = ?hole1
-> -- rumor1 (App l r) = ?hole2
-
-> -- rumor2 : (a : Comb MT ** (b : Comb MT) -> Not ((a # b) = b))
+> rumor : (a: Comb MB) -> (b : Comb MB ** b = a # b)
+> rumor a =
+>   let c   = :B # a # :M
+>       cc  = c # c
+>       eqPrf : StepMB ((:B # a # :M) # (:B # a # :M)) (a # ((:B # a # :M) # (:B # a # :M)))
+>           = MBSteps MBStepB (MBAppR MBStepM)
+>   in (cc ** eqStepMB eqPrf)
