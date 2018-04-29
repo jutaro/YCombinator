@@ -8,13 +8,11 @@
 > %default total
 
 
-> -- ||| a term can be a variable, a primitive combinator or an application
+> -- ||| a term can be a a primitive combinator or an application
+> -- ||| Vars are in the meta language (Idris)
 > data Comb : (base: Type) -> Type where
 >   PrimComb : base -> Comb base
->   Var : String -> Comb base
 >   App : Comb base -> Comb base -> Comb base
-
-> syntax "§"[str] = Var str;
 
 > infixl 9 #
 > (#) : Comb base -> Comb base -> Comb base
@@ -22,17 +20,12 @@
 
 > implementation (Eq t) => Eq (Comb t) where
 >   (PrimComb a)  == (PrimComb b)  = a == b
->   (Var a)   == (Var b)   = a == b
 >   (App a b) == (App c d) = a == c && b == d
 >   _         == _         = False
 
 > implementation (Show t) => Show (Comb t) where
->   show (PrimComb c) = show c
->   show (Var a) = "Var " ++ a
->   show (App a b) = "(" ++ show a ++ " # " ++ show b ++ ")"
-
-> varInjective : {a, b : String} -> Var a = Var b -> a = b
-> varInjective Refl = Refl
+>   showPrec d (PrimComb c) = show c
+>   showPrec d (App a b) = showParens (d > Open) (showPrec Open a ++ " # " ++ showPrec App b)
 
 > baseInjective : {a, b : t} -> PrimComb a = PrimComb b -> a = b
 > baseInjective Refl = Refl
@@ -43,12 +36,6 @@
 > appInjective : {a, b, c, d : Comb t}  -> App a b = App c d -> (a = c, b = d)
 > appInjective Refl = (Refl,Refl)
 
-> varNotPrimComb : {a : String} -> Var a = PrimComb t -> Void
-> varNotPrimComb Refl impossible
-
-> varNotApp : {a : String} -> {l, r : Comb t} -> Var a = App l r -> Void
-> varNotApp Refl impossible
-
 > baseNotApp : PrimComb t = App l r -> Void
 > baseNotApp Refl impossible
 
@@ -57,9 +44,6 @@
 >   total structEq : (x1 : t) -> (x2 : t) -> Dec (x1 = x2)
 
 > implementation (DecEq t) => StructEq (Comb t) where
->   structEq (Var a) (Var b) with (decEq a b)
->     | Yes p = Yes $ cong p
->     | No p  = No $ \h : Var a = Var b => p (varInjective h)
 >   structEq (PrimComb a) (PrimComb b) with (decEq a b)
 >     | Yes p = Yes $ cong p
 >     | No p  = No $ \h : PrimComb a = PrimComb b => p (baseInjective h)
@@ -70,11 +54,7 @@
 >       structEq (App a b) (App c d) | Yes p | No p' =  No $ \h : App a b = App c d => p' (snd (appInjective h))
 >     structEq (App a b) (App c d) | No p = No $ \h : App a b = App c d => p (fst (appInjective h))
 
->   structEq (Var a) (PrimComb t) = No varNotPrimComb
->   structEq (Var a) (App l r) = No varNotApp
->   structEq (PrimComb t) (Var b) = No (negEqSym varNotPrimComb)
 >   structEq (PrimComb t) (App l r) = No (baseNotApp)
->   structEq (App l r) (Var a) = No (negEqSym varNotApp)
 >   structEq (App l r) (PrimComb t) = No (negEqSym baseNotApp)
 
 > subterm' : {t : Type} -> DecEq t => (t1 : Comb t) -> (t2 : Comb t) -> Dec (t1 = t2) -> Bool
@@ -162,7 +142,6 @@
 >   reduceStep : Comb b -> Maybe (Comb b)
 
 > stepHead : Reduce b => Comb b -> Maybe (Comb b)
-> stepHead (Var a)            = Nothing
 > stepHead (PrimComb i)       = Nothing
 > stepHead a@(App head redex) = case reduceStep a of
 >                                 Nothing =>  case stepHead head of
@@ -171,7 +150,6 @@
 >                                 Just t => Just t
 
 > step : Reduce b => Comb b -> Maybe (Comb b)
-> step (Var a)            = Nothing
 > step (PrimComb i)       = Nothing
 > step a@(App head redex) = case reduceStep a of
 >                             Nothing =>  case step head of

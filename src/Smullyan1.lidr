@@ -1,6 +1,6 @@
 Smullyan : Exercises from Mock a Mockingbird
 
-> module Reduce
+> module Smullyan
 
 > import Combinator
 > import Base
@@ -9,16 +9,28 @@ Smullyan : Exercises from Mock a Mockingbird
 > %default total
 > %hide Prelude.Show.Eq
 
-> isFondOf : {t : Type} -> (Reduce t, Eq t, Eq (Comb t)) => (a: Comb t) -> (b : Comb t) -> Bool
+> isFondOf : {base : Type} -> (Reduce base, Eq (Comb base)) => (a: Comb base) -> (b : Comb base) -> Bool
 > isFondOf a b = (a # b) == b
 
-> data FondOf : (t : Type) -> Reduce t => (a : Comb t) -> (b : Comb t) -> (prf: b = a # b) -> Type where
+> data FondOf : (base : Type) -> (a : Comb base) -> (b : Comb base) -> (prf: b = a # b) -> Type where
 >   Fond : Reduce t => FondOf t a b prf
 
-> rumor : (a: Comb MB) -> (b : Comb MB ** b = a # b)
-> rumor a =
+> anyFondOfSome : (a: Comb MB) -> (b : Comb MB ** b = a # b)
+> anyFondOfSome a =
 >   let c   = :B # a # :M
 >       cc  = c # c
->       eqPrf : StepMB ((:B # a # :M) # (:B # a # :M)) (a # ((:B # a # :M) # (:B # a # :M)))
->           = MBSteps MBStepB (MBAppR MBStepM)
->   in (cc ** eqStepMB eqPrf)
+>       stepPrf : StepMB cc (a # cc) = MBStepB >- MBAppR MBStepM
+>   in (cc ** eqStepMB stepPrf)
+
+> egocentric : {base : Type} -> (Reduce base, Eq (Comb base)) => (a: Comb base) -> Bool
+> egocentric a = (a # a) == a
+
+> data Egocentric : (t : Type) -> Reduce t => (a : Comb t) -> (prf: a = a # a) -> Type where
+>   MkEgo : Reduce t => Egocentric t a prf
+
+> existEgocentric : (a: Comb MB ** a = a # a)
+> existEgocentric =
+>   let d = c
+>       c = :B # :M # d # x
+>       stepPrf :  StepMB c (c # c) = MBStepB >- MBStepM
+>   in (c ** eqStepMB stepPrf)

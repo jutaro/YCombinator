@@ -85,6 +85,10 @@ A base with M and B
 >   MBAppR    : StepMB r res -> StepMB (l # r) (l # res)
 >   MBSteps   : StepMB c1 c2 -> StepMB c2 c3 -> StepMB c1 c3
 
+> infixl 10 >-
+> (>-) : StepMB c1 c2 -> StepMB c2 c3 -> StepMB c1 c3
+> (>-) a b = MBSteps a b
+
 > eqStepMB : {a,b : Comb MB} -> StepMB a b -> a = b
 > eqStepMB step = believe_me step
 
@@ -115,10 +119,10 @@ Test code
 > stepPrf1 : StepIKS (:K # :S # :I) :S
 > stepPrf1 = IKSStepK
 
-> stepTest2 : step (:S # (:K # §"x") # :I # :S # (:I # :K)) = Just (((:K # §"x") #  :S) # (:I # :S) # (:I # :K))
+> stepTest2 : {x: Comb IKS} -> step (:S # (:K # x) # :I # :S # (:I # :K)) = Just (((:K # x) #  :S) # (:I # :S) # (:I # :K))
 > stepTest2 = Refl
 
-> stepPrf2 : StepIKS (:S # (:K # §"x") # :I # :S # (:I # :K)) (((:K # §"x") # :S) # (:I # :S) # (:I # :K))
+> stepPrf2 : {x: Comb IKS} -> StepIKS (:S # (:K # x) # :I # :S # (:I # :K)) (((:K # x) # :S) # (:I # :S) # (:I # :K))
 > stepPrf2 = IKSAppL IKSStepS
 
 > subtermTest1 : Subterm (:K # :S) ((:K # :S) # :I)
