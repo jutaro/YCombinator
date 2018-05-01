@@ -1,4 +1,4 @@
-= Combinator : Combs for Combinators
+= Combinator : Terms for Combinators
 
 > module Combinator
 
@@ -15,6 +15,7 @@
 >   App : Comb base -> Comb base -> Comb base
 
 > infixl 9 #
+> -- ||| Application operator
 > (#) : Comb base -> Comb base -> Comb base
 > (#) l r = App l r
 
