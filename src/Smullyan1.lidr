@@ -1,13 +1,13 @@
 Smullyan : Exercises from Mock a Mockingbird
 
-> module Smullyan
+> module Smullyan1
 
 > import Combinator
-> import Base
+> import BaseMB
+> import BaseMBK
 
 > %access public export
 > %default total
-> %hide Prelude.Show.Eq
 
 > isFondOf : {base : Type} -> (Reduce base, Eq (Comb base)) => (a: Comb base) -> (b : Comb base) -> Bool
 > isFondOf a b = (a # b) == b
@@ -65,3 +65,9 @@ Smullyan : Exercises from Mock a Mockingbird
 >       stepPrf1 : StepMB y (a # x) = MBStepB >- MBStepB >- MBAppR (MBAppR MBStepM)
 >       stepPrf2 : StepMB x (a # y) = MBStepEq
 >   in  (x ** (y ** (eqStepMB stepPrf1, eqStepMB stepPrf2)))
+
+> hopelesslyEgocentric : (x : Comb MBK) -> (b: Comb MBK ** b # x = b)
+
+-- > hopelesslyEgocentric x =
+-- >   let b = B # M # K
+-- >   stepPrf1 : StepMB b (b # x) = MBStepB >- MBStepB >- MBAppR (MBAppR MBStepM)
