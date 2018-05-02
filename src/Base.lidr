@@ -84,6 +84,7 @@ A base with M and B
 >   MBAppL    : StepMB l res -> StepMB (l # r) (res # r)
 >   MBAppR    : StepMB r res -> StepMB (l # r) (l # res)
 >   MBSteps   : StepMB c1 c2 -> StepMB c2 c3 -> StepMB c1 c3
+>   MBStepEq  : StepMB x x
 
 > infixl 10 >-
 > (>-) : StepMB c1 c2 -> StepMB c2 c3 -> StepMB c1 c3

@@ -43,7 +43,25 @@ Smullyan : Exercises from Mock a Mockingbird
 > composition a b c x =
 >   let d  = :B # (:B # :B) # :B
 >       stepPrf : StepMB (d # a # b # c # x) (a # (b # (c # x))) = MBAppL (MBAppL (MBAppL MBStepB)) >-
->         MBAppL (MBAppL MBStepB) >-  MBStepB >- MBStepB
+>         MBAppL (MBAppL MBStepB) >- MBStepB >- MBStepB
 >   in (d ** eqStepMB stepPrf)
 
-> compatible : (a, b : Comb MB) -> (x : Comb MB ** (y: Comb MB ** (a # x = y, b # y = x)))
+> compatible : (a, b : Comb MB) -> (x : Comb MB ** (y: Comb MB ** (y = a # x, x = b # y)))
+> compatible a b =
+>   let c = :B # a # b
+>       y' = :B # c # :M
+>       y  = y' # y'
+>       x  = b # y
+>       stepPrf1 : StepMB y (a # x) = MBStepB >- MBStepB >- MBAppR (MBAppR MBStepM)
+>       stepPrf2 : StepMB x (b # y) = MBStepEq
+>   in  (x ** (y ** (eqStepMB stepPrf1, eqStepMB stepPrf2)))
+
+> happy : (a : Comb MB) -> (x : Comb MB ** (y: Comb MB ** (y = a # x, x = a # y)))
+> happy a =
+>   let c = :B # a # a
+>       y' = :B # c # :M
+>       y  = y' # y'
+>       x  = a # y
+>       stepPrf1 : StepMB y (a # x) = MBStepB >- MBStepB >- MBAppR (MBAppR MBStepM)
+>       stepPrf2 : StepMB x (a # y) = MBStepEq
+>   in  (x ** (y ** (eqStepMB stepPrf1, eqStepMB stepPrf2)))
