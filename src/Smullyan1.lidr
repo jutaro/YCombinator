@@ -67,7 +67,24 @@ Smullyan : Exercises from Mock a Mockingbird
 >   in  (x ** (y ** (eqStepMB stepPrf1, eqStepMB stepPrf2)))
 
 > hopelesslyEgocentric : (x : Comb MBK) -> (b: Comb MBK ** b # x = b)
+> hopelesslyEgocentric x =
+>   let b' = :B # :K # :M
+>       b  = b' # b'
+>       stepPrf : StepMBK (b # x) b = MBKAppL MBKStepB >- MBKStepK >- MBKStepM
+>   in (b ** eqStepMBK stepPrf)
 
--- > hopelesslyEgocentric x =
--- >   let b = B # M # K
--- >   stepPrf1 : StepMB b (b # x) = MBStepB >- MBStepB >- MBAppR (MBAppR MBStepM)
+> fixation : (x, z : Comb MBK) -> (y : Comb MBK ** x # z = y -> x # y = y)
+> fixation x z = (z ** id)
+
+> KEgocentricHopeless : (x : Comb MBK) -> :K # :K = :K -> :K # x = :K
+> KEgocentricHopeless x hyp =
+>   let stepPrf : StepMBK (:K # :K # x) :K = MBKStepK
+>   in rewrite sym hyp
+>   in rewrite eqStepMBK stepPrf
+>   in rewrite hyp
+>   in Refl
+
+> kEgocentricFondOf : (x : Comb MBK) -> :K # x # (:K # x) = :K # x -> :K # x = x
+> kEgocentricFondOf x hyp =
+>   let stepPrf : StepMBK (:K # x # (:K # x)) x = MBKStepK
+>   in rewrite sym hyp in eqStepMBK stepPrf

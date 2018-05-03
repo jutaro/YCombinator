@@ -17,7 +17,7 @@ A base with M and B
 
 > syntax ":M" = PrimComb M;
 > syntax ":B" = PrimComb B;
-> syntax ":K" = PrimComb B;
+> syntax ":K" = PrimComb K;
 
 > implementation Reduce MBK where
 >   reduceStep (App (PrimComb M) x) = Just (x # x)

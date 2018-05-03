@@ -7,8 +7,6 @@
 > %access public export
 > %default total
 
-> data Base = List Type
-
 > -- ||| a term can be a a primitive combinator or an application
 > -- ||| Vars are in the meta language (Idris)
 > data Comb : (base: Type) -> Type where
