@@ -108,5 +108,3 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 >   rewrite hyp
 >   -- in rewrite hyp
 >   in ?hole2
-
-#696D6B

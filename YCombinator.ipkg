@@ -1,7 +1,10 @@
 package YCombinator
 
 modules    = Combinator,
-             Base,
+             Reduction,
+             BaseIKS,
+             BaseMB,
+             BaseMBK,
              Smullyan1
 
 main       = Smullyan1

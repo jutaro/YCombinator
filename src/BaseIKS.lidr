@@ -3,6 +3,7 @@
 > module BaseIKS
 
 > import Combinator
+> import Reduction
 > import Decidable.Equality
 
 > %hide Language.Reflection.I
