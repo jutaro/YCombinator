@@ -3,6 +3,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > module Smullyan1
 
 > import Combinator
+> import Reduction
 > import BaseMB
 > import BaseMBK
 
@@ -100,9 +101,12 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 >   in rewrite hyp
 >   in Refl
 
-12 Another Fact about K
+15
 
-> kEgocentricFondOf : (x : Comb MBK) -> :K # x # (:K # x) = :K # x -> :K # x = x
-> kEgocentricFondOf x hyp =
->   let stepPrf : StepMBK (:K # x # (:K # x)) x = MBKStepK
->   in rewrite sym hyp in eqStepMBK stepPrf
+> egocentricContagious : (a, x , y : Comb MBK) -> (a # x = a) ->  (a # x) # y = a # x
+> egocentricContagious a x y hyp =
+>   rewrite hyp
+>   -- in rewrite hyp
+>   in ?hole2
+
+#696D6B
