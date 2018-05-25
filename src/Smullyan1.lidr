@@ -5,7 +5,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > import Combinator
 > import Reduction
 > import BaseMB
-> import BaseMBK
+> import BaseMBKL
 
 > %access public export
 > %default total
@@ -79,32 +79,35 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 
 9 Hopelessly Egocentric
 
-> hopelesslyEgocentric : (x : Comb MBK) -> (b: Comb MBK ** b # x = b)
+> hopelesslyEgocentric : (x : Comb MBKL) -> (b: Comb MBKL ** b # x = b)
 > hopelesslyEgocentric x =
 >   let b' = :B # :K # :M
 >       b  = b' # b'
->       stepPrf : StepMBK (b # x) b = MBKAppL MBKStepB >- MBKStepK >- MBKStepM
->   in (b ** eqStepMBK stepPrf)
+>       stepPrf : StepMBKL (b # x) b = MBKLAppL MBKLStepB >- MBKLStepK >- MBKLStepM
+>   in (b ** eqStepMBKL stepPrf)
 
 10 Fixation
 
-> fixation : (x, z : Comb MBK) -> (y : Comb MBK ** x # z = y -> x # y = y)
+> fixation : (x, z : Comb MBKL) -> (y : Comb MBKL ** x # z = y -> x # y = y)
 > fixation x z = (z ** id)
 
 11 A fact about K
 
-> KEgocentricHopeless : (x : Comb MBK) -> :K # :K = :K -> :K # x = :K
+> KEgocentricHopeless : (x : Comb MBKL) -> :K # :K = :K -> :K # x = :K
 > KEgocentricHopeless x hyp =
->   let stepPrf : StepMBK (:K # :K # x) :K = MBKStepK
+>   let stepPrf : StepMBKL (:K # :K # x) :K = MBKLStepK
 >   in rewrite sym hyp
->   in rewrite eqStepMBK stepPrf
+>   in rewrite eqStepMBKL stepPrf
 >   in rewrite hyp
 >   in Refl
 
 15
 
-> egocentricContagious : (a, x , y : Comb MBK) -> (a # x = a) ->  (a # x) # y = a # x
+> contagiousLemma : (a, x : Comb MBKL) -> (a # x = a) -> (y : Comb MBKL) -> (a # y = a)
+> contagiousLemma a x hyp y = ?h1
+
+
+> egocentricContagious : (a, x , y : Comb MBKL) -> (a # x = a) -> (a # x) # y = a # x
 > egocentricContagious a x y hyp =
 >   rewrite hyp
->   -- in rewrite hyp
->   in ?hole2
+>   in ?hole

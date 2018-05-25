@@ -113,14 +113,24 @@
 > subtermReflexive : {t: Type} -> {a : Comb t} -> Subterm a a
 > subtermReflexive = SubtermEq
 
+
 > {-}
+> termImpossible : {t: Type} -> {a, b : Comb t} ->  Not (App a b = a)
+> termImpossible Refl impossible
+
+> subtermImpossible : {t: Type} -> {a, b : Comb t} ->  Not (Subterm (App a b) a)
+> subtermImpossible SubtermEq impossible
+> subtermImpossible (SubtermAppL p1) = ?hole
+
 > subtermAnitsymmetric : {t: Type} -> {n, m : Comb t} -> Subterm m n -> Subterm n m -> n = m
 > subtermAnitsymmetric SubtermEq _ = Refl
 > subtermAnitsymmetric _ SubtermEq = Refl
-> subtermAnitsymmetric {n = App l r} {m = App l' r'} (SubtermAppL p1) (SubtermAppL p2) =
->   let indHyp = subtermAnitsymmetric {n=l} {m=l'} (subtermInAppL p1) (subtermInAppL p2)
->   -- in rewrite indHyp
->   in ?subtermAnitsymmetric1
+> subtermAnitsymmetric {n = App l r} {m} (SubtermAppL p1) p2 =
+>   let indHyp = subtermAnitsymmetric {n=l} {m} p1 (subtermInAppL p2)
+>       rule = subtermImpossible {a=m} {b=r}
+>       p2' = replace (sym indHyp) p2
+>   in rewrite indHyp
+>   in ?hole
 > subtermAnitsymmetric {n = App l r} {m = App l' r'}(SubtermAppR p1) (SubtermAppR p2) =
 >   let indHyp = subtermAnitsymmetric {n=r} {m=r'} (subtermInAppR p1) (subtermInAppR p2)
 >   -- in rewrite indHyp

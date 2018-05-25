@@ -3,6 +3,7 @@
 > module BaseMB
 
 > import Combinator
+> import Reduction
 > import Decidable.Equality
 
 > %access public export
