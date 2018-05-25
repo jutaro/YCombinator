@@ -38,16 +38,11 @@ A base with M, B, K and L
 >   MBKLAppR    : StepMBKL r res -> StepMBKL (l # r) (l # res)
 >   MBKLSteps   : StepMBKL c1 c2 -> StepMBKL c2 c3 -> StepMBKL c1 c3
 >   MBKLRev     : StepMBKL c1 c2 -> StepMBKL c2 c1
->   MBKLStepsR  : StepMBKL c1 c2 -> StepMBKL c3 c2 -> StepMBKL c1 c3
 >   MBKLStepEq  : StepMBKL x x
 
 > infixl 10 >-
 > (>-) : StepMBKL c1 c2 -> StepMBKL c2 c3 -> StepMBKL c1 c3
 > (>-) a b = MBKLSteps a b
-
-> infixl 10 -<
-> (-<) : StepMBKL c1 c2 -> StepMBKL c3 c2 -> StepMBKL c1 c3
-> (-<) a b = MBKLStepsR a b
 
 > eqStepMBKL : {a,b : Comb MBKL} -> StepMBKL a b -> a = b
 > eqStepMBKL step = believe_me step
