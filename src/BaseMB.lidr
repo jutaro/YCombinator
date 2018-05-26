@@ -23,20 +23,20 @@ A base with M and B
 >   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
 >   reduceStep _ = Nothing
 
-> data StepMB : Comb MB -> Comb MB -> Type where
->   MBStepM   : StepMB (:M # x) (x # x)
->   MBStepB   : StepMB (:B # x # y # z) (x # (y # z))
->   MBAppL    : StepMB l res -> StepMB (l # r) (res # r)
->   MBAppR    : StepMB r res -> StepMB (l # r) (l # res)
->   MBSteps   : StepMB c1 c2 -> StepMB c2 c3 -> StepMB c1 c3
->   MBStepEq  : StepMB x x
+> data Step : Comb MB -> Comb MB -> Type where
+>   StepM   : Step (:M # x) (x # x)
+>   StepB   : Step (:B # x # y # z) (x # (y # z))
+>   AppL    : Step l res -> Step (l # r) (res # r)
+>   AppR    : Step r res -> Step (l # r) (l # res)
+>   Steps   : Step c1 c2 -> Step c2 c3 -> Step c1 c3
+>   StepEq  : Step x x
 
 > infixl 10 >-
-> (>-) : StepMB c1 c2 -> StepMB c2 c3 -> StepMB c1 c3
-> (>-) a b = MBSteps a b
+> (>-) : Step c1 c2 -> Step c2 c3 -> Step c1 c3
+> (>-) a b = Steps a b
 
-> eqStepMB : {a,b : Comb MB} -> StepMB a b -> a = b
-> eqStepMB step = believe_me step
+> eqStep : {a,b : Comb MB} -> Step a b -> a = b
+> eqStep step = believe_me step
 
 > implementation Eq MB where
 >   M == M = True

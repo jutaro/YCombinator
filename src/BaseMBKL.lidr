@@ -29,26 +29,23 @@ A base with M, B, K and L
 >   reduceStep (App (App (PrimComb L) x) y) = Just (x # (y # y))
 >   reduceStep _ = Nothing
 
-> data StepMBKL : Comb MBKL -> Comb MBKL -> Type where
->   MBKLStepM   : StepMBKL (:M # x) (x # x)
->   MBKLStepB   : StepMBKL (:B # x # y # z) (x # (y # z))
->   MBKLStepK   : StepMBKL (:K # x # y) x
->   MBKLStepL   : StepMBKL (:L # x # y) (x # (y # y))
->   MBKLAppL    : StepMBKL l res -> StepMBKL (l # r) (res # r)
->   MBKLAppR    : StepMBKL r res -> StepMBKL (l # r) (l # res)
->   MBKLSteps   : StepMBKL c1 c2 -> StepMBKL c2 c3 -> StepMBKL c1 c3
->   MBKLRev     : StepMBKL c1 c2 -> StepMBKL c2 c1
->   MBKLStepEq  : StepMBKL x x
+> data Step : Comb MBKL -> Comb MBKL -> Type where
+>   StepM   : Step (:M # x) (x # x)
+>   StepB   : Step (:B # x # y # z) (x # (y # z))
+>   StepK   : Step (:K # x # y) x
+>   StepL   : Step (:L # x # y) (x # (y # y))
+>   AppL    : Step l res -> Step (l # r) (res # r)
+>   AppR    : Step r res -> Step (l # r) (l # res)
+>   Steps   : Step c1 c2 -> Step c2 c3 -> Step c1 c3
+>   Rev     : Step c1 c2 -> Step c2 c1
+>   StepEq  : Step x x
 
 > infixl 10 >-
-> (>-) : StepMBKL c1 c2 -> StepMBKL c2 c3 -> StepMBKL c1 c3
-> (>-) a b = MBKLSteps a b
+> (>-) : Step c1 c2 -> Step c2 c3 -> Step c1 c3
+> (>-) a b = Steps a b
 
-> eqStepMBKL : {a,b : Comb MBKL} -> StepMBKL a b -> a = b
-> eqStepMBKL step = believe_me step
-
-> combinatorExtensionality : {a, b : Comb MBKL} -> (x : Comb MBKL) -> a # x = b # x -> a = b
-> combinatorExtensionality {a} {b} x = really_believe_me
+> eqStep : {a,b : Comb MBKL} -> Step a b -> a = b
+> eqStep step = believe_me step
 
 > implementation Eq MBKL where
 >   M == M = True

@@ -18,6 +18,9 @@
 > (#) : Comb base -> Comb base -> Comb base
 > (#) l r = App l r
 
+> combinatorExtensionality : {base: Type} -> {a, b : Comb base} -> (x : Comb base) -> a # x = b # x -> a = b
+> combinatorExtensionality {a} {b} x = really_believe_me
+
 > implementation (Eq t) => Eq (Comb t) where
 >   (PrimComb a)  == (PrimComb b)  = a == b
 >   (App a b) == (App c d) = a == c && b == d

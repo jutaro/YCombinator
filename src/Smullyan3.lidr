@@ -5,6 +5,7 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > import Combinator
 > import Reduction
 > import BaseMBKL
+> import BaseBWCK
 
 > %access public export
 > %default total
@@ -19,19 +20,35 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > dove : (x, y, z, w: Comb MBKL) -> :D # x # y # z # w = x # y # (z # w)
 > dove x y z w =
 >   let
->     stepPrf = MBKLAppL (MBKLAppL MBKLStepB) >- MBKLStepB
->   in eqStepMBKL stepPrf
+>     stepPrf = AppL (AppL StepB) >- StepB
+>   in eqStep stepPrf
 
 6) Blackbirds
 
 > Blackbird : Comb MBKL
-> Blackbird = :B # (:B # :B # :B)
+> Blackbird = :B # :B # :B
 
-> blackbird : (x, y, z, w, v: Comb MBKL) -> Blackbird # x # y # z # w # v = x # y # (z # w # v)
-> blackbird x y z w v =
+
+7) Eagle
+
+> Eagle : Comb MBKL
+> Eagle = :B # (:B # :B # :B)
+
+> syntax ":E" = Eagle;
+
+> eagle : (x, y, z, w, v: Comb MBKL) -> Eagle # x # y # z # w # v = x # y # (z # w # v)
+> eagle x y z w v =
 >   let
->     stepPrf = MBKLAppL (MBKLAppL (MBKLAppL MBKLStepB))
->                 >- MBKLAppL (MBKLAppL (MBKLAppL MBKLStepB))
->                 >- MBKLAppL MBKLStepB
->                 >- MBKLStepB
->   in eqStepMBKL stepPrf
+>     stepPrf = AppL (AppL (AppL StepB))
+>                 >- AppL (AppL (AppL StepB))
+>                 >- AppL StepB
+>                 >- StepB
+>   in eqStep stepPrf
+
+13) Warbler
+
+> mockingbirdFromWarbler : (x : Comb BWCK) -> (m : Comb BWCK ** m # x = x # x)
+> mockingbirdFromWarbler x =
+>   let m = :W # (:W # :K)
+>       stepPrf = StepW >- AppL StepW >- AppL StepK
+>   in (m ** eqStep stepPrf)
