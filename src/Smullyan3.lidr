@@ -111,7 +111,19 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > cardinalFromRobin2 x y z =
 >   let c = R # R # R
 >       seq = AppL (AppL StepB) >- StepB >- StepC >- AppL StepW >- AppL StepK
->       seq' = (map (AppL . AppL) seq ++ map AppL seq ++ seq)
->       stepPrf = fold (>-) ?hole
+>       seq' = (map (AppL . AppL) seq >- map AppL seq >- seq)
+>       stepPrf = seq'
 >   in (c ** eqStep stepPrf)
 > -}
+
+37) Queer Bird
+
+> Q : Comb BWCK
+> Q = :C # :B
+
+> syntax ":Q" = Q;
+
+> queer : (x, y, z : Comb BWCK) -> :Q # x # y # z = y # (x # z)
+> queer x y z =
+>   let stepPrf = AppL StepC >- StepB
+>   in eqStep stepPrf
