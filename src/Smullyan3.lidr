@@ -45,11 +45,15 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 
 13) Warbler
 
-> mockingbirdFromWarbler : (x : Comb BWCK) -> (m : Comb BWCK ** m # x = x # x)
+> Mockingbird : Comb BWCK
+> Mockingbird = :W # (:W # :K)
+
+> syntax ":M" = Mockingbird;
+
+> mockingbirdFromWarbler : (x : Comb BWCK) -> (:M # x = x # x)
 > mockingbirdFromWarbler x =
->   let m = :W # (:W # :K)
->       stepPrf = StepW >- AppL StepW >- AppL StepK
->   in (m ** eqStep stepPrf)
+>   let stepPrf = StepW >- AppL StepW >- AppL StepK
+>   in (eqStep stepPrf)
 
 15) Identity
 
@@ -130,12 +134,10 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 
 47) Goldfinches
 
-37) Queer Bird
+> Goldfinch : Comb BWCK
+> Goldfinch = :B # :B # :C
 
-> G : Comb BWCK
-> G = :B # :B # :C
-
-> syntax ":G" = G;
+> syntax ":G" = Goldfinch;
 
 > goldfinch : (x, y, z, w : Comb BWCK) -> :G # x # y # z # w = x # w # (y # z)
 > goldfinch x y z w =
