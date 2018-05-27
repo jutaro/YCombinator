@@ -127,3 +127,17 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > queer x y z =
 >   let stepPrf = AppL StepC >- StepB
 >   in eqStep stepPrf
+
+47) Goldfinches
+
+37) Queer Bird
+
+> G : Comb BWCK
+> G = :B # :B # :C
+
+> syntax ":G" = G;
+
+> goldfinch : (x, y, z, w : Comb BWCK) -> :G # x # y # z # w = x # w # (y # z)
+> goldfinch x y z w =
+>   let stepPrf = AppL (AppL (AppL StepB)) >- AppL StepB >- StepC
+>   in eqStep stepPrf
