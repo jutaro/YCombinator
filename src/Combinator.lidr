@@ -42,6 +42,8 @@
 > baseNotApp : PrimComb t = App l r -> Void
 > baseNotApp Refl impossible
 
+Using here a new interface to use DecEq for "reductional" equality
+
 > interface StructEq t where
 >   ||| Decide whether two elements of `t` are propositionally equal
 >   total structEq : (x1 : t) -> (x2 : t) -> Dec (x1 = x2)
@@ -59,6 +61,8 @@
 
 >   structEq (PrimComb t) (App l r) = No (baseNotApp)
 >   structEq (App l r) (PrimComb t) = No (negEqSym baseNotApp)
+
+Subterms
 
 > subterm' : {t : Type} -> DecEq t => (t1 : Comb t) -> (t2 : Comb t) -> Dec (t1 = t2) -> Bool
 > subterm' a b (Yes _) = True

@@ -19,9 +19,17 @@ x(Yx) = Yx or: x # (Y # x) == Y # x
 > sageFromMBR : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromMBR x =
 >   let phi = :B # :M # (:R # :M # :B)
->       stepPrf = StepB >- StepW >- AppL StepW >- AppL StepK >- AppL (AppL (AppL StepB)) >-
->                 AppL StepB >- AppL StepC >- AppL (AppL StepW) >- AppL (AppL StepK) >- StepB >-
->                 AppR (Rev StepB)
+>       stepPrf = StepB
+>                   >- StepW
+>                   >- AppL StepW
+>                   >- AppL StepK
+>                   >- AppL (AppL (AppL StepB))
+>                   >- AppL StepB
+>                   >- AppL StepC
+>                   >- AppL (AppL StepW)
+>                   >- AppL (AppL StepK)
+>                   >- StepB
+>                   >- AppR (Rev StepB)
 >   in (phi ** eqStep stepPrf)
 
 2) From M, B, C
@@ -29,7 +37,13 @@ x(Yx) = Yx or: x # (Y # x) == Y # x
 > sageFromMBC : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromMBC x =
 >   let phi = :B # :M # (:C # :B # :M)
->       stepPrf = StepB >- StepW >- AppL StepW >- AppL StepK >- AppL StepC >- StepB >- AppR (Rev StepB)
+>       stepPrf = StepB
+>                   >- StepW
+>                   >- AppL StepW
+>                   >- AppL StepK
+>                   >- AppL StepC
+>                   >- StepB
+>                   >- AppR (Rev StepB)
 >   in (phi ** eqStep stepPrf)
 
 2) From M, B, L
@@ -37,6 +51,15 @@ x(Yx) = Yx or: x # (Y # x) == Y # x
 > sageFromMBL : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromMBL x =
 >   let phi = :B # :M # :L
->       stepPrf = StepB >- StepW >- AppL StepW >- AppL StepK >- AppL StepB >- StepW >- StepB >- ?hole
->         -- reverse with B (W W K) which equals B M
+>       stepPrf = StepB
+>                   >- StepW
+>                   >- AppL StepW
+>                   >- AppL StepK
+>                   >- AppL StepB
+>                   >- StepW
+>                   >- StepB
+>                   >- Rev (AppR (StepW >- AppL StepW >- AppL StepK))
+>                   >- Rev (AppR StepB)
 >   in (phi ** eqStep stepPrf)
+
+> -- lemma1 (x: Comb BWCK) -> (x # x = (:W # :W # :K) # x)

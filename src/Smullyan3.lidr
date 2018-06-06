@@ -43,7 +43,7 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 >                 >- StepB
 >   in eqStep stepPrf
 
-13) Warbler
+13) Mockingbird
 
 > Mockingbird : Comb BWCK
 > Mockingbird = :W # (:W # :K)
@@ -54,6 +54,14 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > mockingbirdFromWarbler x =
 >   let stepPrf = StepW >- AppL StepW >- AppL StepK
 >   in (eqStep stepPrf)
+
+Just to test how to prove the reverse with steps
+
+> revMockingbirdFromWarbler : (x : Comb BWCK) -> (x # x = :M # x)
+> revMockingbirdFromWarbler x =
+>   let stepPrf = Rev (StepW >- AppL StepW >- AppL StepK)
+>   in (eqStep stepPrf)
+
 
 15) Identity
 
