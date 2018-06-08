@@ -12,11 +12,10 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 
 2) Lark from B, C M
 
-
 > larkFromCBM : (x, y : Comb BWCK) -> (l : Comb BWCK ** l # x # y = x # (y # y))
 > larkFromCBM x y =
 >   let l = :C # :B # :M
->       stepPrf = AppL StepC >- StepB >- AppR StepW >- AppR (AppL StepW) >- AppR (AppL StepK)
+>       stepPrf = AppL StepC >- StepB >- AppR mockingBirdSteps
 >   in (l ** eqStep stepPrf)
 
 > Lark : Comb BWCK
@@ -24,9 +23,12 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 
 > syntax ":L" = Lark;
 
+> larkSteps : Step (:L # x # y) (x # (y # y))
+> larkSteps = AppL StepB >- StepW >- StepB
+
 > larkFromBWB : (x, y : Comb BWCK) -> (:L # x # y = x # (y # y))
 > larkFromBWB x y =
->   let stepPrf = AppL StepB >- StepW >- StepB
+>   let stepPrf = larkSteps
 >   in (eqStep stepPrf)
 
 10) Warblers and Hummingbirds
@@ -36,9 +38,12 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 
 > syntax ":H" = Hummingbird;
 
+> hummingbirdSteps : Step (:H # x # y # z) (x # y # z # y)
+> hummingbirdSteps = AppL (AppL StepB) >- StepC >- AppL (AppL StepB) >- AppL StepB >- StepW >- AppL StepC
+
 > hummingbird : (x, y, z : Comb BWCK) -> (:H # x # y # z = x # y # z # y)
 > hummingbird x y z =
->   let stepPrf = AppL (AppL StepB) >- StepC >- AppL (AppL StepB) >- AppL StepB >- StepW >- AppL StepC
+>   let stepPrf = hummingbirdSteps
 >   in (eqStep stepPrf)
 
 12 Starlings
@@ -48,7 +53,10 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 
 > syntax ":S" = Starling;
 
+> starlingSteps : Step (:S # x # y # z) (x # z # (y # z))
+> starlingSteps = AppL (AppL StepB) >- AppL StepB >- StepW >- goldfinchSteps
+
 > starling : (x, y, z : Comb BWCK) -> :S # x # y # z  = x # z # (y # z)
 > starling x y z =
->   let stepPrf = AppL (AppL StepB) >- AppL StepB >- StepW >- AppL (AppL (AppL StepB)) >- AppL StepB >- StepC
+>   let stepPrf = starlingSteps
 >   in eqStep stepPrf

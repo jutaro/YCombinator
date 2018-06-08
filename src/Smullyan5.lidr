@@ -20,14 +20,8 @@ x(Yx) = Yx or: x # (Y # x) == Y # x
 > sageFromMBR x =
 >   let phi = :B # :M # (:R # :M # :B)
 >       stepPrf = StepB
->                   >- StepW
->                   >- AppL StepW
->                   >- AppL StepK
->                   >- AppL (AppL (AppL StepB))
->                   >- AppL StepB
->                   >- AppL StepC
->                   >- AppL (AppL StepW)
->                   >- AppL (AppL StepK)
+>                   >- mockingBirdSteps
+>                   >- AppL robinSteps
 >                   >- StepB
 >                   >- AppR (Rev StepB)
 >   in (phi ** eqStep stepPrf)
@@ -38,28 +32,50 @@ x(Yx) = Yx or: x # (Y # x) == Y # x
 > sageFromMBC x =
 >   let phi = :B # :M # (:C # :B # :M)
 >       stepPrf = StepB
->                   >- StepW
->                   >- AppL StepW
->                   >- AppL StepK
+>                   >- mockingBirdSteps
 >                   >- AppL StepC
 >                   >- StepB
 >                   >- AppR (Rev StepB)
 >   in (phi ** eqStep stepPrf)
 
-2) From M, B, L
+
+3) From M, B, L
 
 > sageFromMBL : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromMBL x =
 >   let phi = :B # :M # :L
 >       stepPrf = StepB
->                   >- StepW
->                   >- AppL StepW
->                   >- AppL StepK
->                   >- AppL StepB
->                   >- StepW
->                   >- StepB
->                   >- Rev (AppR (StepW >- AppL StepW >- AppL StepK))
+>                   >- mockingBirdSteps
+>                   >- larkSteps
+>                   >- Rev (AppR mockingBirdSteps)
 >                   >- Rev (AppR StepB)
 >   in (phi ** eqStep stepPrf)
 
-> -- lemma1 (x: Comb BWCK) -> (x # x = (:W # :W # :K) # x)
+4) From M, B, W
+
+The same as before, as L = B W B
+
+> sageFromMBW : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
+> sageFromMBW x =
+>   let phi = :B # :M # (:B # :W # :B)
+>       stepPrf = StepB
+>                   >- mockingBirdSteps
+>                   >- AppL StepB
+>                   >- StepW
+>                   >- StepB
+>                   >- Rev (AppR mockingBirdSteps)
+>                   >- Rev (AppR StepB)
+>   in (phi ** eqStep stepPrf)
+
+6) From Q, M, L
+
+> sageFromQML : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
+> sageFromQML x =
+>   let phi = :Q # :L # (:L # :I)
+>       stepPrf = queerSteps
+>                 >- larkSteps
+>                 >- StepW
+>                 >- StepK
+>                 >- larkSteps
+>                 >- ?hole
+>   in (phi ** eqStep stepPrf)
