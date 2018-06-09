@@ -67,15 +67,84 @@ The same as before, as L = B W B
 >                   >- Rev (AppR StepB)
 >   in (phi ** eqStep stepPrf)
 
-6) From Q, M, L
+6) From Q, L, W
 
-> sageFromQML : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
-> sageFromQML x =
+> sageFromQLW : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
+> sageFromQLW x =
+>   let phi = :W # (:Q # :L # (:Q # :L))
+>       stepPrf = StepW
+>                   >- AppL queerSteps
+>                   >- queerSteps
+>                   >- larkSteps
+>                   >- Rev (AppR queerSteps)
+>                   >- Rev (AppR (AppL queerSteps))
+>                   >- Rev (AppR StepW)
+>   in (phi ** eqStep stepPrf)
+
+6) From Q, L, I
+
+> sageFromQLI : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
+> sageFromQLI x =
 >   let phi = :Q # :L # (:L # :I)
 >       stepPrf = queerSteps
 >                 >- larkSteps
->                 >- StepW
->                 >- StepK
+>                 >- identitySteps
 >                 >- larkSteps
->                 >- ?hole
+>                 >- Rev (AppR identitySteps)
+>                 >- Rev (AppR larkSteps)
+>                 >- Rev (AppR queerSteps)
+>   in (phi ** eqStep stepPrf)
+
+7) From B, W, C
+
+Q = C B
+L = B W B
+
+> sageFromBWC : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
+> sageFromBWC x =
+>   let phi = :W # (:B # (:C # :B # (:B # :W # :B)) # (:B # :W # :B))
+>       stepPrf = StepW
+>                 >- AppL StepB
+>                 >- AppL StepC
+>                 >- StepB
+>                 >- AppL StepB
+>                 >- StepW
+>                 >- StepB
+>                 >- Rev (AppR StepB)
+>                 >- Rev (AppR (AppL StepC))
+>                 >- Rev (AppR (AppL StepB))
+>                 >- Rev (AppR StepW)
+>   in (phi ** eqStep stepPrf)
+
+7) From Q M
+
+> sageFromQM : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
+> sageFromQM x =
+>   let phi = :Q # (:Q # :M) # :M
+>       stepPrf = queerSteps
+>                   >- mockingBirdSteps
+>                   >- queerSteps
+>                   >- Rev (AppR queerSteps)
+>   in (phi ** eqStep stepPrf)
+
+8) From S L
+
+> sageFromSL : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
+> sageFromSL x =
+>   let phi = :S # :L # :L
+>       stepPrf = starlingSteps
+>                   >- larkSteps
+>                   >- Rev (AppR starlingSteps)
+>   in (phi ** eqStep stepPrf)
+
+8) From B W S
+
+> sageFromBWS : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
+> sageFromBWS x =
+>   let phi = :W # :S # (:B # :W # :B)
+>       stepPrf = AppL StepW
+>                   >- starlingSteps
+>                   >- larkSteps
+>                   >- Rev (AppR starlingSteps)
+>                   >- Rev (AppR (AppL StepW))
 >   in (phi ** eqStep stepPrf)
