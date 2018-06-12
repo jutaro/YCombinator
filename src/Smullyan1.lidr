@@ -103,6 +103,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 
 15
 
+> {-
 > contagiousLemma : (a, x : Comb MBKL) -> (a # x = a) -> (y : Comb MBKL) -> (a # y = a)
 > contagiousLemma a x hyp y = ?h1
 
@@ -111,3 +112,4 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > egocentricContagious a x y hyp =
 >   rewrite hyp
 >   in ?hole
+> -}

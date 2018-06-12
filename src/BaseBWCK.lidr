@@ -38,6 +38,7 @@ A base with B, W, C, K
 >   AppR    : Step r res -> Step (l # r) (l # res)
 >   Steps   : Step c1 c2 -> Step c2 c3 -> Step c1 c3
 >   Rev     : Step c1 c2 -> Step c2 c1
+>   StepRep : c1 = c2 -> Step c1 c2
 >   StepEq  : Step x x
 
 > infixl 10 >-

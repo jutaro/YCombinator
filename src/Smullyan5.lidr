@@ -14,6 +14,16 @@ Smullyan5 : A Galery of Sage Birds? : Exercises from Mock a Mockingbird (Chapter
 Sage bird Y
 x(Yx) = Yx or: x # (Y # x) == Y # x
 
+> {- ???
+> isSage : {base : Type} -> (Reduce base, Eq (Comb base)) => (x : Comb base) -> (Y: Comb base) -> Bool
+> isSage Y x = (Y # x) == x # (Y # x)
+
+> data ExistSage : {base : Type} -> {x : Comb base} -> (prf: ( ** y # x = x # (y # x))) -> Type where
+>   IsSage : prf -> ExistSage prf
+> -}
+
+1) From M, B,R
+
 1) From M, B,R
 
 > sageFromMBR : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
@@ -116,7 +126,7 @@ L = B W B
 >                 >- Rev (AppR StepW)
 >   in (phi ** eqStep stepPrf)
 
-7) From Q M
+8) From Q M
 
 > sageFromQM : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromQM x =
@@ -127,7 +137,7 @@ L = B W B
 >                   >- Rev (AppR queerSteps)
 >   in (phi ** eqStep stepPrf)
 
-8) From S L
+9) From S L
 
 > sageFromSL : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromSL x =
@@ -137,7 +147,7 @@ L = B W B
 >                   >- Rev (AppR starlingSteps)
 >   in (phi ** eqStep stepPrf)
 
-8) From B W S
+10) From B W S
 
 > sageFromBWS : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromBWS x =
@@ -148,3 +158,102 @@ L = B W B
 >                   >- Rev (AppR starlingSteps)
 >                   >- Rev (AppR (AppL StepW))
 >   in (phi ** eqStep stepPrf)
+
+11) TuringBird
+
+> Turing : Comb BWCK
+> Turing = :B # :W # (:L # :Q)
+
+> syntax ":U" = Turing;
+
+> turingSteps : Step (:U # x # y) (y # (x # x # y))
+> turingSteps = AppL StepB >- StepW >- AppL (AppL larkSteps) >- queerSteps
+
+> turing : (x, y : Comb BWCK) -> :U # x # y = y # (x # x # y)
+> turing x y =
+>   let stepPrf = turingSteps
+>   in eqStep stepPrf
+
+12) From U
+
+> sageFromU : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
+> sageFromU x =
+>   let phi = :U # :U
+>       stepPrf = turingSteps
+>   in (phi ** eqStep stepPrf)
+
+13) Owls
+
+> Owl : Comb BWCK
+> Owl = :B # :W # (:C # :B)
+
+> syntax ":O" = Owl;
+
+> owlSteps : Step (:O # x # y) (y # (x # y))
+> owlSteps = AppL StepB >- StepW >- AppL StepC >- StepB
+
+> owl : (x, y : Comb BWCK) -> :O # x # y = y # (x # y)
+> owl x y =
+>   let stepPrf = owlSteps
+>   in eqStep stepPrf
+
+14) Turing rom O and L
+
+> turingFromOL : (x, y : Comb BWCK) -> (t : Comb BWCK ** t # x # y = y # (x # x # y))
+> turingFromOL x y =
+>   let t = :L # :O
+>       stepPrf = AppL larkSteps >- owlSteps
+>   in (t ** eqStep stepPrf)
+
+15) Mockingbird from O I
+
+> mockingbirdFromOI : (x : Comb BWCK) -> (m : Comb BWCK ** m # x = x # x)
+> mockingbirdFromOI x =
+>   let m = :O # :I
+>       stepPrf = owlSteps >- AppR identitySteps
+>   in (m ** eqStep stepPrf)
+
+16) Owl from S I
+
+> owlFromSI : (x, y : Comb BWCK) -> (o : Comb BWCK ** o # x # y = y # (x # y))
+> owlFromSI x y =
+>   let o = :S # :I
+>       stepPrf = starlingSteps >- AppL identitySteps
+>   in (o ** eqStep stepPrf)
+
+17) x y = y -> x (x y) = x y
+
+> lemmaPre : (x, y : Comb BWCK) -> x # y = y -> x # (x # y) = x # y
+> lemmaPre x y hyp = rewrite hyp in hyp
+
+18)
+
+> owlSage : (x :Comb BWCK) -> (y : Comb BWCK) -> y # x = x # (y # x) -> x # (:O # y # x) = :O # y # x
+> owlSage x y hyp =
+>   let hyp1 = cong {f=App x} hyp
+>       stepPrf = AppR owlSteps >- StepRep (sym hyp1) >- Rev owlSteps
+>   in (eqStep stepPrf)
+
+19)
+
+> owlSage2 : (y : Comb BWCK) -> ((x :Comb BWCK) -> y # x = x # (y # x)) -> :O # (y # :O) = y # :O
+> owlSage2 y hyp =
+>   let stepPrf = Rev (StepRep (hyp :O))
+>   in (eqStep stepPrf)
+
+20)
+
+> owlSage3 : (y : Comb BWCK) -> (x :Comb BWCK) -> :O # y = y ->  y # x = x # (y # x)
+> owlSage3 y x hyp =
+>   let hyp1 = cong {f= \ arg => App arg x} hyp
+>       stepPrf = StepRep (sym hyp1) >- owlSteps
+>   in (eqStep stepPrf)
+
+22)
+
+> owlSage5 : (x :Comb BWCK) -> (y : Comb BWCK) -> y # x = x # (y # x) -> :O # y = y
+> owlSage5 x y hyp =
+>   let hyp1 : Step (:O # y # x) (x # (y # x)) = owlSteps
+>       hyp2 : Step (:O # y # x) (y # x) = hyp1 >- StepRep (sym hyp)
+>       stepPrf = StepRep (combinatorExtensionality x (eqStep hyp2))
+>   in (eqStep stepPrf)
