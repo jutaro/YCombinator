@@ -2,7 +2,7 @@ package YCombinator
 
 modules    = Combinator,
              Reduction,
-             BaseIKS,
+             BaseKS,
              BaseMB,
              BaseMBK,
              Smullyan1

@@ -253,7 +253,6 @@ L = B W B
 
 > owlSage5 : (x :Comb BWCK) -> (y : Comb BWCK) -> y # x = x # (y # x) -> :O # y = y
 > owlSage5 x y hyp =
->   let hyp1 : Step (:O # y # x) (x # (y # x)) = owlSteps
->       hyp2 : Step (:O # y # x) (y # x) = hyp1 >- StepRep (sym hyp)
->       stepPrf = StepRep (combinatorExtensionality x (eqStep hyp2))
+>   let hyp1 : Step (:O # y # x) (y # x) = owlSteps >- StepRep (sym hyp)
+>       stepPrf = StepRep (combinatorExtensionality x (eqStep hyp1))
 >   in (eqStep stepPrf)
