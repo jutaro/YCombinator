@@ -4,7 +4,8 @@ modules    = Combinator,
              Reduction,
              BaseKS,
              BaseMB,
-             BaseMBK,
+             BaseMBKL,
+             BaseBWCK,
              Smullyan1
 
 main       = Smullyan1
