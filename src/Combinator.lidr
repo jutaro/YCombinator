@@ -16,15 +16,16 @@
 > infixl 9 #
 > -- ||| Application operator
 > (#) : Comb base -> Comb base -> Comb base
-> (#) l r = App l r
+> (#) = App
 
+> -- this is a specialized version of `appInjective` below
 > combinatorExtensionality : {a, b : Comb base} -> (x : Comb base) -> a # x = b # x -> a = b
 > combinatorExtensionality _ Refl = Refl
 
 > implementation (Eq t) => Eq (Comb t) where
->   (PrimComb a)  == (PrimComb b)  = a == b
->   (App a b) == (App c d) = a == c && b == d
->   _         == _         = False
+>   (PrimComb a) == (PrimComb b) = a == b
+>   (App a b)    == (App c d)    = a == c && b == d
+>   _            == _            = False
 
 > implementation (Show t) => Show (Comb t) where
 >   showPrec d (PrimComb c) = show c
@@ -49,7 +50,7 @@ Using here a new interface to use DecEq for "reductional" equality
 
 > interface StructEq t where
 >   ||| Decide whether two elements of `t` are propositionally equal
->   total structEq : (x1 : t) -> (x2 : t) -> Dec (x1 = x2)
+>   total structEq : (x1, x2 : t) -> Dec (x1 = x2)
 
 > implementation (DecEq t) => StructEq (Comb t) where
 >   structEq (PrimComb a) (PrimComb b) with (decEq a b)
@@ -67,13 +68,12 @@ Using here a new interface to use DecEq for "reductional" equality
 
 Subterms
 
-> subterm' : {t : Type} -> DecEq t => (t1 : Comb t) -> (t2 : Comb t) -> Dec (t1 = t2) -> Bool
-> subterm' a b (Yes _) = True
-> subterm' a b (No  _) = case b of
->                 (App l r) => subterm' a l (structEq a l) || subterm' a r (structEq a r)
->                 _ => False
+> subterm' : DecEq t => (t1, t2 : Comb t) -> Dec (t1 = t2) -> Bool
+> subterm' a b         (Yes _) = True
+> subterm' a (App l r) (No  _) = subterm' a l (structEq a l) || subterm' a r (structEq a r)
+> subterm' a _         (No  _) = False
 
-> subterm : {t : Type} -> (StructEq (Comb t), DecEq t) => (t1 : Comb t) -> (t2 : Comb t) -> Bool
+> subterm : (StructEq (Comb t), DecEq t) => (t1, t2 : Comb t) -> Bool
 > subterm a b = subterm' a b (structEq a b)
 
 > data Subterm : Comb b -> Comb b -> Type where
@@ -103,21 +103,21 @@ Subterms
 > subtermTransitive SubtermEq SubtermEq = SubtermEq
 > subtermTransitive SubtermEq r = r
 > subtermTransitive l SubtermEq = l
-> subtermTransitive {a} {b = App bl br} {c = App cl cr} (SubtermAppL pl) (SubtermAppL pr) =
+> subtermTransitive {b = App bl br} {c = App cl cr} (SubtermAppL pl) (SubtermAppL pr) =
 >   let pr' = subtermInAppL pr
->       indHyp = subtermTransitive {a} {b=bl} {c=cl} pl pr'
+>       indHyp = subtermTransitive {b=bl} {c=cl} pl pr'
 >   in SubtermAppL indHyp
-> subtermTransitive {a} {b = App bl br} {c = App cl cr} (SubtermAppR pl) (SubtermAppR pr) =
+> subtermTransitive {b = App bl br} {c = App cl cr} (SubtermAppR pl) (SubtermAppR pr) =
 >   let pr' = subtermInAppR pr
->       indHyp = subtermTransitive {a} {b=br} {c=cr} pl pr'
+>       indHyp = subtermTransitive {b=br} {c=cr} pl pr'
 >   in SubtermAppR indHyp
-> subtermTransitive {a} {b = App bl br} {c = App cl cr} (SubtermAppR pl) (SubtermAppL pr) =
+> subtermTransitive {b = App bl br} {c = App cl cr} (SubtermAppR pl) (SubtermAppL pr) =
 >   let pr' = subtermInAppR pr
->       indHyp = subtermTransitive {a} {b=br} {c=cl} pl pr'
+>       indHyp = subtermTransitive {b=br} {c=cl} pl pr'
 >   in SubtermAppL indHyp
-> subtermTransitive {a} {b = App bl br} {c = App cl cr} (SubtermAppL pl) (SubtermAppR pr) =
+> subtermTransitive {b = App bl br} {c = App cl cr} (SubtermAppL pl) (SubtermAppR pr) =
 >   let pr' = subtermInAppL pr
->       indHyp = subtermTransitive {a} {b=bl} {c=cr} pl pr'
+>       indHyp = subtermTransitive {b=bl} {c=cr} pl pr'
 >   in SubtermAppR indHyp
 
 > subtermReflexive : {t: Type} -> {a : Comb t} -> Subterm a a
@@ -142,17 +142,17 @@ Subterms
 >   subtermImpossibleL {a=App _ _} (SubtermAppR s) = subtermImpossibleR $ subtermInAppL s
 
 > subtermAntisymmetric : {n, m : Comb t} -> Subterm m n -> Subterm n m -> n = m
-> subtermAntisymmetric SubtermEq _ = Refl
-> subtermAntisymmetric _ SubtermEq = Refl
-> subtermAntisymmetric {n=l1 # r1} {m=l2 # r2} (SubtermAppL s1) (SubtermAppL s2) = 
+> subtermAntisymmetric                        SubtermEq        _               = Refl
+> subtermAntisymmetric                        _                SubtermEq       = Refl
+> subtermAntisymmetric {n=l1 # _} {m=l2 # _} (SubtermAppL s1) (SubtermAppL s2) = 
 >   let ih = subtermAntisymmetric {n=l1} {m=l2} (subtermInAppL s1) (subtermInAppL s2) in
 >   absurd $ subtermImpossibleL $ replace ih s1
-> subtermAntisymmetric {n=l1 # r1} {m=l2 # r2} (SubtermAppL s1) (SubtermAppR s2) = 
+> subtermAntisymmetric {n=l1 # _} {m=_ # r2} (SubtermAppL s1) (SubtermAppR s2) = 
 >   let ih = subtermAntisymmetric {n=l1} {m=r2} (subtermInAppR s1) (subtermInAppL s2) in  
 >   absurd $ subtermImpossibleR $ replace ih s1
-> subtermAntisymmetric {n=l1 # r1} {m=l2 # r2} (SubtermAppR s1) (SubtermAppL s2) = 
+> subtermAntisymmetric {n=_ # r1} {m=l2 # _} (SubtermAppR s1) (SubtermAppL s2) = 
 >   let ih = subtermAntisymmetric {n=r1} {m=l2} (subtermInAppL s1) (subtermInAppR s2) in
 >   absurd $ subtermImpossibleL $ replace ih s1
-> subtermAntisymmetric {n=l1 # r1} {m=l2 # r2} (SubtermAppR s1) (SubtermAppR s2) = 
+> subtermAntisymmetric {n=_ # r1} {m=_ # r2} (SubtermAppR s1) (SubtermAppR s2) = 
 >   let ih = subtermAntisymmetric {n=r1} {m=r2} (subtermInAppR s1) (subtermInAppR s2) in
 >   absurd $ subtermImpossibleR $ replace ih s1
