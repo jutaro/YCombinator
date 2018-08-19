@@ -18,7 +18,7 @@ A x = x M
 > composeWithM : (x: Comb MBKL) -> (a : Comb MBKL ** a # x = :B # x # :M)
 > composeWithM x =
 >   let a = :L
->       stepPrf = StepL >- AppR (Rev StepM) >- Rev StepB
+>       stepPrf = stepL >- AppR (Rev stepM) >- Rev stepB
 >   in (a ** combinatorExtensionality x (eqStep stepPrf))
 
 And the sage is B M L
@@ -26,5 +26,5 @@ And the sage is B M L
 > sageExist : (x: Comb MBKL) -> (Y : Comb MBKL ** Y # x = x # (Y # x))
 > sageExist x =
 >   let Y = :B # :M # :L
->       stepPrf = StepB >- StepM >- StepL >- AppR (Rev StepM) >- AppR (Rev StepB)
+>       stepPrf = stepB >- stepM >- stepL >- AppR (Rev stepM) >- AppR (Rev stepB)
 >   in (Y ** eqStep stepPrf)

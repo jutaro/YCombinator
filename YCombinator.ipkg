@@ -4,10 +4,16 @@ modules    = Combinator,
              Reduction,
              BaseKS,
              BaseMB,
-             BaseMBK,
-             Smullyan1
+             BaseMBKL,
+             BaseBWCK,
+             Smullyan1,
+             Smullyan2,
+             Smullyan3,
+             Smullyan4,
+             Smullyan5
 
-main       = Smullyan1
+
+main       = Smullyan5
 
 brief      = "Research on combinatory logic and type systems"
 version    = 0.0.1.0

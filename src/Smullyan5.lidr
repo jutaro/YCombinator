@@ -29,11 +29,11 @@ x(Yx) = Yx or: x # (Y # x) == Y # x
 > sageFromMBR : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromMBR x =
 >   let phi = :B # :M # (:R # :M # :B)
->       stepPrf = StepB
+>       stepPrf = stepB
 >                   >- mockingBirdSteps
 >                   >- AppL robinSteps
->                   >- StepB
->                   >- AppR (Rev StepB)
+>                   >- stepB
+>                   >- AppR (Rev stepB)
 >   in (phi ** eqStep stepPrf)
 
 2) From M, B, C
@@ -41,11 +41,11 @@ x(Yx) = Yx or: x # (Y # x) == Y # x
 > sageFromMBC : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromMBC x =
 >   let phi = :B # :M # (:C # :B # :M)
->       stepPrf = StepB
+>       stepPrf = stepB
 >                   >- mockingBirdSteps
->                   >- AppL StepC
->                   >- StepB
->                   >- AppR (Rev StepB)
+>                   >- AppL stepC
+>                   >- stepB
+>                   >- AppR (Rev stepB)
 >   in (phi ** eqStep stepPrf)
 
 
@@ -54,11 +54,11 @@ x(Yx) = Yx or: x # (Y # x) == Y # x
 > sageFromMBL : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromMBL x =
 >   let phi = :B # :M # :L
->       stepPrf = StepB
+>       stepPrf = stepB
 >                   >- mockingBirdSteps
 >                   >- larkSteps
 >                   >- Rev (AppR mockingBirdSteps)
->                   >- Rev (AppR StepB)
+>                   >- Rev (AppR stepB)
 >   in (phi ** eqStep stepPrf)
 
 4) From M, B, W
@@ -68,13 +68,13 @@ The same as before, as L = B W B
 > sageFromMBW : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromMBW x =
 >   let phi = :B # :M # (:B # :W # :B)
->       stepPrf = StepB
+>       stepPrf = stepB
 >                   >- mockingBirdSteps
->                   >- AppL StepB
->                   >- StepW
->                   >- StepB
+>                   >- AppL stepB
+>                   >- stepW
+>                   >- stepB
 >                   >- Rev (AppR mockingBirdSteps)
->                   >- Rev (AppR StepB)
+>                   >- Rev (AppR stepB)
 >   in (phi ** eqStep stepPrf)
 
 6) From Q, L, W
@@ -82,13 +82,13 @@ The same as before, as L = B W B
 > sageFromQLW : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromQLW x =
 >   let phi = :W # (:Q # :L # (:Q # :L))
->       stepPrf = StepW
+>       stepPrf = stepW
 >                   >- AppL queerSteps
 >                   >- queerSteps
 >                   >- larkSteps
 >                   >- Rev (AppR queerSteps)
 >                   >- Rev (AppR (AppL queerSteps))
->                   >- Rev (AppR StepW)
+>                   >- Rev (AppR stepW)
 >   in (phi ** eqStep stepPrf)
 
 6) From Q, L, I
@@ -113,17 +113,17 @@ L = B W B
 > sageFromBWC : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromBWC x =
 >   let phi = :W # (:B # (:C # :B # (:B # :W # :B)) # (:B # :W # :B))
->       stepPrf = StepW
->                 >- AppL StepB
->                 >- AppL StepC
->                 >- StepB
->                 >- AppL StepB
->                 >- StepW
->                 >- StepB
->                 >- Rev (AppR StepB)
->                 >- Rev (AppR (AppL StepC))
->                 >- Rev (AppR (AppL StepB))
->                 >- Rev (AppR StepW)
+>       stepPrf = stepW
+>                 >- AppL stepB
+>                 >- AppL stepC
+>                 >- stepB
+>                 >- AppL stepB
+>                 >- stepW
+>                 >- stepB
+>                 >- Rev (AppR stepB)
+>                 >- Rev (AppR (AppL stepC))
+>                 >- Rev (AppR (AppL stepB))
+>                 >- Rev (AppR stepW)
 >   in (phi ** eqStep stepPrf)
 
 8) From Q M
@@ -152,11 +152,11 @@ L = B W B
 > sageFromBWS : (x : Comb BWCK) -> (phi: Comb BWCK ** phi # x = x # (phi # x))
 > sageFromBWS x =
 >   let phi = :W # :S # (:B # :W # :B)
->       stepPrf = AppL StepW
+>       stepPrf = AppL stepW
 >                   >- starlingSteps
 >                   >- larkSteps
 >                   >- Rev (AppR starlingSteps)
->                   >- Rev (AppR (AppL StepW))
+>                   >- Rev (AppR (AppL stepW))
 >   in (phi ** eqStep stepPrf)
 
 11) TuringBird
@@ -167,12 +167,10 @@ L = B W B
 > syntax ":U" = Turing;
 
 > turingSteps : Step (:U # x # y) (y # (x # x # y))
-> turingSteps = AppL StepB >- StepW >- AppL (AppL larkSteps) >- queerSteps
+> turingSteps = AppL stepB >- stepW >- AppL (AppL larkSteps) >- queerSteps
 
 > turing : (x, y : Comb BWCK) -> :U # x # y = y # (x # x # y)
-> turing x y =
->   let stepPrf = turingSteps
->   in eqStep stepPrf
+> turing x y = eqStep turingSteps
 
 12) From U
 
@@ -190,12 +188,10 @@ L = B W B
 > syntax ":O" = Owl;
 
 > owlSteps : Step (:O # x # y) (y # (x # y))
-> owlSteps = AppL StepB >- StepW >- AppL StepC >- StepB
+> owlSteps = AppL stepB >- stepW >- AppL stepC >- stepB
 
 > owl : (x, y : Comb BWCK) -> :O # x # y = y # (x # y)
-> owl x y =
->   let stepPrf = owlSteps
->   in eqStep stepPrf
+> owl x y = eqStep owlSteps
 
 14) Turing rom O and L
 

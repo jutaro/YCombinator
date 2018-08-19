@@ -8,9 +8,34 @@
 > %access public export
 > %default total
 
+> data Step : Comb b -> Comb b -> Type where
+>   Prim    : {l, r: Comb b} -> Reduce b => PrimRed l r -> Step l r
+>   AppL    : Step l res -> Step (l # r) (res # r)
+>   AppR    : Step r res -> Step (l # r) (l # res)
+>   Steps   : Step c1 c2 -> Step c2 c3 -> Step c1 c3
+>   Rev     : Step c1 c2 -> Step c2 c1
+>   StepRep : c1 = c2 -> Step c1 c2
+>   StepEq  : Step x x
 
-> interface Reduce b where
->   reduceStep : Comb b -> Maybe (Comb b)
+> data Step' : Comb b -> Comb b -> Type where
+>   Prim'    : {l, r: Comb b} -> Reduce b => PrimRed l r -> Step' l r
+>   AppL'    : Step' l res -> Step' (l # r) (res # r)
+>   AppR'    : Step' r res -> Step' (l # r) (l # res)
+>   Steps'   : Step' c1 c2 -> Step' c2 c3 -> Step' c1 c3
+
+> infixl 10 >-
+> (>-) : Step c1 c2 -> Step c2 c3 -> Step c1 c3
+> (>-) a b = Steps a b
+
+> infixl 10 >>-
+> (>>-) : Step' c1 c2 -> Step' c2 c3 -> Step' c1 c3
+> (>>-) a b = Steps' a b
+
+> eqStep : {a,b : Comb base} -> Step a b -> a = b
+> eqStep step = believe_me step
+
+> eqStep' : {a,b : Comb base} -> Step' a b -> a = b
+> eqStep' step = believe_me step
 
 > stepHead : Reduce b => Comb b -> Maybe (Comb b)
 > stepHead (PrimComb i)       = Nothing
@@ -82,6 +107,10 @@
 >                   No p1 =>  let hyp : ((l = r) -> Void) = believe_me p1
 >                             in No $ (\ h : l = r => hyp h)
 
+> isNormalForm : Reduce b => Comb b -> Bool
+> isNormalForm c = case step c of
+>                      Nothing => True
+>                      Just _ => False
 
 Proof that subterm implement Subterm? How to do this?
 

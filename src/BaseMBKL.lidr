@@ -1,4 +1,4 @@
-= Base : Combinator Bases
+= BaseMBKL : A base with combinators M, B, K and L
 
 > module BaseMBKL
 
@@ -22,30 +22,31 @@ A base with M, B, K and L
 > syntax ":K" = PrimComb K;
 > syntax ":L" = PrimComb L;
 
+> data PrimStep : Comb MBKL -> Comb MBKL -> Type where
+>   StepM   : {x : Comb MBKL} -> Reduce MBKL => PrimStep (:M # x) (x # x)
+>   StepB   : {x, y, z : Comb MBKL} -> Reduce MBKL => PrimStep (:B # x # y # z) (x # (y # z))
+>   StepK   : {x, y : Comb MBKL} -> Reduce MBKL => PrimStep (:K # x # y) x
+>   StepL   : {x, y : Comb MBKL} -> Reduce MBKL => PrimStep (:L # x # y) (x # (y # y))
+
 > implementation Reduce MBKL where
 >   reduceStep (App (PrimComb M) x) = Just (x # x)
 >   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
 >   reduceStep (App (App (PrimComb K) x) y) = Just x
 >   reduceStep (App (App (PrimComb L) x) y) = Just (x # (y # y))
 >   reduceStep _ = Nothing
+>   PrimRed = PrimStep
 
-> data Step : Comb MBKL -> Comb MBKL -> Type where
->   StepM   : Step (:M # x) (x # x)
->   StepB   : Step (:B # x # y # z) (x # (y # z))
->   StepK   : Step (:K # x # y) x
->   StepL   : Step (:L # x # y) (x # (y # y))
->   AppL    : Step l res -> Step (l # r) (res # r)
->   AppR    : Step r res -> Step (l # r) (l # res)
->   Steps   : Step c1 c2 -> Step c2 c3 -> Step c1 c3
->   Rev     : Step c1 c2 -> Step c2 c1
->   StepEq  : Step x x
+> stepM : {x : Comb MBKL} -> Step (:M # x) (x # x)
+> stepM = Prim StepM
 
-> infixl 10 >-
-> (>-) : Step c1 c2 -> Step c2 c3 -> Step c1 c3
-> (>-) a b = Steps a b
+> stepB : {x, y, z: Comb MBKL} -> Step (:B # x # y # z) (x # (y # z))
+> stepB = Prim StepB
 
-> eqStep : {a,b : Comb MBKL} -> Step a b -> a = b
-> eqStep step = believe_me step
+> stepK : {x, y : Comb MBKL} -> Step (:K # x # y) x
+> stepK = Prim StepK
+
+> stepL : {x, y : Comb MBKL} -> Step (:L # x # y) (x # (y # y))
+> stepL = Prim StepL
 
 > implementation Eq MBKL where
 >   M == M = True

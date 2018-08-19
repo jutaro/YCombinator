@@ -1,4 +1,4 @@
-= Base : Combinator Bases
+= BaseMB : A base with combinators M and B
 
 > module BaseMB
 
@@ -18,25 +18,21 @@ A base with M and B
 > syntax ":M" = PrimComb M;
 > syntax ":B" = PrimComb B;
 
+> data PrimStep : Comb MB -> Comb MB -> Type where
+>   StepM   : {x: Comb MB} -> Reduce MB => PrimStep (:M # x) (x # x)
+>   StepB   : {x, y: Comb MB} -> Reduce MB => PrimStep (:B # x # y # z) (x # (y # z))
+
 > implementation Reduce MB where
 >   reduceStep (App (PrimComb M) x) = Just (x # x)
 >   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
 >   reduceStep _ = Nothing
+>   PrimRed = PrimStep
 
-> data Step : Comb MB -> Comb MB -> Type where
->   StepM   : Step (:M # x) (x # x)
->   StepB   : Step (:B # x # y # z) (x # (y # z))
->   AppL    : Step l res -> Step (l # r) (res # r)
->   AppR    : Step r res -> Step (l # r) (l # res)
->   Steps   : Step c1 c2 -> Step c2 c3 -> Step c1 c3
->   StepEq  : Step x x
+> stepM : {x : Comb MB} -> Step (:M # x) (x # x)
+> stepM = Prim StepM
 
-> infixl 10 >-
-> (>-) : Step c1 c2 -> Step c2 c3 -> Step c1 c3
-> (>-) a b = Steps a b
-
-> eqStep : {a,b : Comb MB} -> Step a b -> a = b
-> eqStep step = believe_me step
+> stepB : {x, y, z: Comb MB} -> Step (:B # x # y # z) (x # (y # z))
+> stepB = Prim StepB
 
 > implementation Eq MB where
 >   M == M = True

@@ -1,4 +1,4 @@
-= Base : Combinator Bases
+= BaseKS : A base with combinators K and S
 
 > module BaseKS
 
@@ -6,11 +6,11 @@
 > import Reduction
 > import Decidable.Equality
 
-> %hide Language.Reflection.I
 > %access public export
 > %default total
 
-> -- A basic combinator base
+A basic combinator base
+
 > data KS : Type where
 >   K : KS
 >   S : KS
@@ -18,27 +18,21 @@
 > syntax ":K" = PrimComb K;
 > syntax ":S" = PrimComb S;
 
+> data PrimStep : Comb KS -> Comb KS -> Type where
+>   StepK   :  {x, y: Comb KS} -> Reduce KS => PrimStep (:K # x # y) x
+>   StepS   :  {x, y, z: Comb KS} -> Reduce KS => PrimStep (:S # x # y # z) ((x # z) # (y # z))
+
 > implementation Reduce KS where
 >   reduceStep (App (App (PrimComb K) x) y) = Just x
 >   reduceStep (App (App (App (PrimComb S) x) y) z) = Just ((x # z) # (y # z))
 >   reduceStep _ = Nothing
+>   PrimRed = PrimStep
 
-> data Step : Comb KS -> Comb KS -> Type where
->   StepK   :  {x, y: Comb KS} -> Step (:K # x # y) x
->   StepS   :  {x, y, z: Comb KS} -> Step (:S # x # y # z) ((x # z) # (y # z))
->   AppL    : Step l res -> Step (l # r) (res # r)
->   AppR    : Step r res -> Step (l # r) (l # res)
->   Steps   : Step c1 c2 -> Step c2 c3 -> Step c1 c3
->   Rev     : Step c1 c2 -> Step c2 c1
->   StepRep : c1 = c2 -> Step c1 c2
->   StepEq  : Step x x
+> stepK : {x, y: Comb KS} -> Step (:K # x # y) x
+> stepK = Prim StepK
 
-> infixl 10 >-
-> (>-) : Step c1 c2 -> Step c2 c3 -> Step c1 c3
-> (>-) a b = Steps a b
-
-> eqStep : {a,b : Comb KS} -> Step a b -> a = b
-> eqStep step = believe_me step
+> stepS : {x, y, z: Comb KS} -> Step (:S # x # y # z) ((x # z) # (y # z))
+> stepS = Prim StepS
 
 > implementation Eq KS where
 >   K == K = True
@@ -66,15 +60,7 @@ Test code
 > stepTest1 = Refl
 
 > stepPrf1 : Step (:K # :S # :K) :S
-> stepPrf1 = StepK
-
-> {-
-> stepTest2 : {x: Comb KS} -> step (:S # (:K # x) # :I # :S # (:I # :K)) = Just (((:K # x) #  :S) # (:I # :S) # (:I # :K))
-> stepTest2 = Refl
-
-> stepPrf2 : {x: Comb KS} -> Step (:S # (:K # x) # :I # :S # (:I # :K)) (((:K # x) # :S) # (:I # :S) # (:I # :K))
-> stepPrf2 = KSAppL KSStepS
-> -}
+> stepPrf1 = stepK
 
 > subtermTest1 : Subterm (:K # :S) ((:K # :S) # :K)
 > subtermTest1 = SubtermAppL $ SubtermEq

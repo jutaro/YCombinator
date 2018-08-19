@@ -1,4 +1,4 @@
-= Base : Combinator Bases
+= BaseBWCK : A base with combinators B, W, C and K
 
 > module BaseBWCK
 
@@ -9,7 +9,7 @@
 > %access public export
 > %default total
 
-A base with B, W, C, K
+A base with combinators B, W, C and K
 
 > data BWCK : Type where
 >   B : BWCK
@@ -22,31 +22,31 @@ A base with B, W, C, K
 > syntax ":C" = PrimComb C;
 > syntax ":K" = PrimComb K;
 
+> data PrimStep : Comb BWCK -> Comb BWCK -> Type where
+>   StepB   : {x, y, z: Comb BWCK} -> Reduce BWCK => PrimStep (:B # x # y # z) (x # (y # z))
+>   StepW   : {x, y: Comb BWCK} -> Reduce BWCK => PrimStep (:W # x # y) (x # y # y)
+>   StepC   : {x, y, z: Comb BWCK} -> Reduce BWCK => PrimStep (:C # x # y # z) (x # z # y)
+>   StepK   : {x, y: Comb BWCK} -> Reduce BWCK => PrimStep (:K # x # y) x
+
 > implementation Reduce BWCK where
 >   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
 >   reduceStep (App (App (PrimComb W) x) y) = Just (x # y # y)
 >   reduceStep (App (App (App (PrimComb C) x) y) z) = Just (x # z # y)
 >   reduceStep (App (App (PrimComb K) x) y) = Just x
 >   reduceStep _ = Nothing
+>   PrimRed = PrimStep
 
-> data Step : Comb BWCK -> Comb BWCK -> Type where
->   StepB   : Step (:B # x # y # z) (x # (y # z))
->   StepW   : Step (:W # x # y) (x # y # y)
->   StepC   : Step (:C # x # y # z) (x # z # y)
->   StepK   : Step (:K # x # y) x
->   AppL    : Step l res -> Step (l # r) (res # r)
->   AppR    : Step r res -> Step (l # r) (l # res)
->   Steps   : Step c1 c2 -> Step c2 c3 -> Step c1 c3
->   Rev     : Step c1 c2 -> Step c2 c1
->   StepRep : c1 = c2 -> Step c1 c2
->   StepEq  : Step x x
+> stepK : {x, y: Comb BWCK} -> Step (:K # x # y) x
+> stepK = Prim StepK
 
-> infixl 10 >-
-> (>-) : Step c1 c2 -> Step c2 c3 -> Step c1 c3
-> (>-) a b = Steps a b
+> stepB : {x, y, z: Comb BWCK} -> Step (:B # x # y # z) (x # (y # z))
+> stepB = Prim StepB
 
-> eqStep : {a,b : Comb BWCK} -> Step a b -> a = b
-> eqStep step = believe_me step
+> stepW : {x, y: Comb BWCK} -> Step (:W # x # y) (x # y # y)
+> stepW = Prim StepW
+
+> stepC : {x, y: Comb BWCK} -> Step (:C # x # y # z) (x # z # y)
+> stepC = Prim StepC
 
 > implementation Eq BWCK where
 >   B == B = True

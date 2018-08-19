@@ -7,11 +7,18 @@
 > %access public export
 > %default total
 
+> mutual
+>
 > -- ||| a term can be a a primitive combinator or an application
 > -- ||| Vars are in the meta language (Idris)
-> data Comb : (base: Type) -> Type where
->   PrimComb : base -> Comb base
->   App : Comb base -> Comb base -> Comb base
+>   data Comb : (base: Type) -> Type where
+>     PrimComb : Reduce base => base -> Comb base
+>     App : Comb base -> Comb base -> Comb base
+>
+> -- Combinatory bases are implemented with this type 
+>   interface Reduce base where
+>     reduceStep : Comb base -> Maybe (Comb base)
+>     PrimRed    : Comb base -> Comb base -> Type
 
 > infixl 9 #
 > -- ||| Application operator
@@ -31,7 +38,7 @@
 >   showPrec d (PrimComb c) = show c
 >   showPrec d (App a b) = showParens (d > Open) (showPrec Open a ++ " # " ++ showPrec App b)
 
-> baseInjective : {a, b : t} -> PrimComb a = PrimComb b -> a = b
+> baseInjective : {a, b : base} -> Reduce base => PrimComb a = PrimComb b -> a = b
 > baseInjective Refl = Refl
 
 > appCongruent : {a, b, c, d : Comb t} -> a = c -> b = d -> App a b = App c d
@@ -40,11 +47,11 @@
 > appInjective : {a, b, c, d : Comb t}  -> App a b = App c d -> (a = c, b = d)
 > appInjective Refl = (Refl,Refl)
 
-> Uninhabited (PrimComb _ = App _ _) where
->   uninhabited Refl impossible
+> uninhabited1 : {a : base} -> (Reduce base) => PrimComb a = App _ _ -> Void
+> uninhabited1 Refl impossible
 
-> Uninhabited (App _ _ = PrimComb _) where
->   uninhabited Refl impossible
+> uninhabited2 : {a : base} -> (Reduce base) => App _ _ = PrimComb a -> Void
+> uninhabited2 Refl impossible
 
 Using here a new interface to use DecEq for "reductional" equality
 
@@ -52,7 +59,7 @@ Using here a new interface to use DecEq for "reductional" equality
 >   ||| Decide whether two elements of `t` are propositionally equal
 >   total structEq : (x1, x2 : t) -> Dec (x1 = x2)
 
-> implementation (DecEq t) => StructEq (Comb t) where
+> implementation (DecEq t, Reduce t) => StructEq (Comb t) where
 >   structEq (PrimComb a) (PrimComb b) with (decEq a b)
 >     | Yes p = Yes $ cong p
 >     | No p  = No $ \h : PrimComb a = PrimComb b => p (baseInjective h)
@@ -63,17 +70,17 @@ Using here a new interface to use DecEq for "reductional" equality
 >       structEq (App a b) (App c d) | Yes p | No p' =  No $ \h : App a b = App c d => p' (snd (appInjective h))
 >     structEq (App a b) (App c d) | No p = No $ \h : App a b = App c d => p (fst (appInjective h))
 
->   structEq (PrimComb t) (App l r) = No absurd
->   structEq (App l r) (PrimComb t) = No absurd
+>   structEq (PrimComb t) (App l r) = No uninhabited1
+>   structEq (App l r) (PrimComb t) = No uninhabited2
 
 Subterms
 
-> subterm' : DecEq t => (t1, t2 : Comb t) -> Dec (t1 = t2) -> Bool
+> subterm' : (DecEq t, Reduce t) => (t1, t2 : Comb t) -> Dec (t1 = t2) -> Bool
 > subterm' a b         (Yes _) = True
 > subterm' a (App l r) (No  _) = subterm' a l (structEq a l) || subterm' a r (structEq a r)
 > subterm' a _         (No  _) = False
 
-> subterm : (StructEq (Comb t), DecEq t) => (t1, t2 : Comb t) -> Bool
+> subterm : (StructEq (Comb t), DecEq t, Reduce t) => (t1, t2 : Comb t) -> Bool
 > subterm a b = subterm' a b (structEq a b)
 
 > data Subterm : Comb b -> Comb b -> Type where
@@ -144,15 +151,15 @@ Subterms
 > subtermAntisymmetric : {n, m : Comb t} -> Subterm m n -> Subterm n m -> n = m
 > subtermAntisymmetric                        SubtermEq        _               = Refl
 > subtermAntisymmetric                        _                SubtermEq       = Refl
-> subtermAntisymmetric {n=l1 # _} {m=l2 # _} (SubtermAppL s1) (SubtermAppL s2) = 
+> subtermAntisymmetric {n=l1 # _} {m=l2 # _} (SubtermAppL s1) (SubtermAppL s2) =
 >   let ih = subtermAntisymmetric {n=l1} {m=l2} (subtermInAppL s1) (subtermInAppL s2) in
 >   absurd $ subtermImpossibleL $ replace ih s1
-> subtermAntisymmetric {n=l1 # _} {m=_ # r2} (SubtermAppL s1) (SubtermAppR s2) = 
->   let ih = subtermAntisymmetric {n=l1} {m=r2} (subtermInAppR s1) (subtermInAppL s2) in  
+> subtermAntisymmetric {n=l1 # _} {m=_ # r2} (SubtermAppL s1) (SubtermAppR s2) =
+>   let ih = subtermAntisymmetric {n=l1} {m=r2} (subtermInAppR s1) (subtermInAppL s2) in
 >   absurd $ subtermImpossibleR $ replace ih s1
-> subtermAntisymmetric {n=_ # r1} {m=l2 # _} (SubtermAppR s1) (SubtermAppL s2) = 
+> subtermAntisymmetric {n=_ # r1} {m=l2 # _} (SubtermAppR s1) (SubtermAppL s2) =
 >   let ih = subtermAntisymmetric {n=r1} {m=l2} (subtermInAppL s1) (subtermInAppR s2) in
 >   absurd $ subtermImpossibleL $ replace ih s1
-> subtermAntisymmetric {n=_ # r1} {m=_ # r2} (SubtermAppR s1) (SubtermAppR s2) = 
+> subtermAntisymmetric {n=_ # r1} {m=_ # r2} (SubtermAppR s1) (SubtermAppR s2) =
 >   let ih = subtermAntisymmetric {n=r1} {m=r2} (subtermInAppR s1) (subtermInAppR s2) in
 >   absurd $ subtermImpossibleR $ replace ih s1

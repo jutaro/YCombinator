@@ -18,12 +18,10 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > syntax ":D" = Dove;
 
 > doveSteps : Step (:D # x # y # z # w)  (x # y # (z # w))
-> doveSteps = AppL (AppL StepB) >- StepB
+> doveSteps = AppL (AppL stepB) >- stepB
 
 > dove : (x, y, z, w: Comb BWCK) -> :D # x # y # z # w = x # y # (z # w)
-> dove x y z w =
->   let stepPrf = doveSteps
->   in eqStep stepPrf
+> dove x y z w = eqStep doveSteps
 
 6) Blackbirds
 
@@ -31,12 +29,10 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > Blackbird = :B # :B # :B
 
 > blackbirdSteps : Step (Blackbird # x # y # z # w) (x # (y # z # w))
-> blackbirdSteps = AppL (AppL (AppL StepB)) >- AppL StepB >- StepB
+> blackbirdSteps = AppL (AppL (AppL stepB)) >- AppL stepB >- stepB
 
 > blackbird : (x, y, z, w: Comb BWCK) -> Blackbird # x # y # z # w = x # (y # z # w)
-> blackbird x y z w =
->   let stepPrf = blackbirdSteps
->   in eqStep stepPrf
+> blackbird x y z w = eqStep blackbirdSteps
 
 7) Eagle
 
@@ -46,12 +42,10 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > syntax ":E" = Eagle;
 
 > eagleSteps : Step (:E # x # y # z # w # v) (x # y # (z # w # v))
-> eagleSteps = AppL (AppL (AppL StepB)) >- blackbirdSteps
+> eagleSteps = AppL (AppL (AppL stepB)) >- blackbirdSteps
 
 > eagle : (x, y, z, w, v: Comb BWCK) -> :E # x # y # z # w # v = x # y # (z # w # v)
-> eagle x y z w v =
->   let stepPrf = eagleSteps
->   in eqStep stepPrf
+> eagle x y z w v = eqStep eagleSteps
 
 13) Mockingbird
 
@@ -61,12 +55,10 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > syntax ":M" = Mockingbird;
 
 > mockingBirdSteps : Step (:M # x) (x # x)
-> mockingBirdSteps = StepW >- AppL StepW >- AppL StepK
+> mockingBirdSteps = stepW >- AppL stepW >- AppL stepK
 
 > mockingbirdFromWarbler : (x : Comb BWCK) -> (:M # x = x # x)
-> mockingbirdFromWarbler x =
->   let stepPrf = mockingBirdSteps
->   in (eqStep stepPrf)
+> mockingbirdFromWarbler x = eqStep mockingBirdSteps
 
 Just to test how to prove the reverse with steps
 
@@ -84,19 +76,17 @@ Just to test how to prove the reverse with steps
 > syntax ":I" = I;
 
 > identitySteps : Step (:I # x) x
-> identitySteps = StepW >- StepK
+> identitySteps = stepW >- stepK
 
 > identity : (x : Comb BWCK) -> :I # x = x
-> identity x =
->   let stepPrf = identitySteps
->   in eqStep stepPrf
+> identity x = eqStep identitySteps
 
 16) Cardinal and Identity
 
 > identityCK : (x : Comb BWCK) -> (i: Comb BWCK ** i # x = x)
 > identityCK x =
 >   let i = :C # :K # :K
->       stepPrf = StepC >- StepK
+>       stepPrf = stepC >- stepK
 >   in (i ** eqStep stepPrf)
 
 17) Thrushes
@@ -107,12 +97,10 @@ Just to test how to prove the reverse with steps
 > syntax ":T" = T;
 
 > trushSteps : Step (:T # x # y) (y # x)
-> trushSteps = StepC >- AppL StepW >- AppL StepK
+> trushSteps = stepC >- AppL stepW >- AppL stepK
 
 > trush : (x, y : Comb BWCK) -> :T # x # y = y # x
-> trush x y =
->   let stepPrf = trushSteps
->   in eqStep stepPrf
+> trush x y = eqStep trushSteps
 
 20) Robins
 
@@ -122,12 +110,10 @@ Just to test how to prove the reverse with steps
 > syntax ":R" = R;
 
 > robinSteps : Step (:R # x # y # z) (y # z # x)
-> robinSteps = AppL (AppL StepB) >- StepB >- StepC >- AppL StepW >- AppL StepK
+> robinSteps = AppL (AppL stepB) >- stepB >- stepC >- AppL stepW >- AppL stepK
 
 > robin : (x, y, z : Comb BWCK) -> :R # x # y # z = y # z # x
-> robin x y z =
->   let stepPrf = robinSteps
->   in eqStep stepPrf
+> robin x y z = eqStep robinSteps
 
 21) Robins and Cardinals
 
@@ -155,12 +141,10 @@ Just to test how to prove the reverse with steps
 > syntax ":Q" = Q;
 
 > queerSteps : Step (:Q # x # y # z) (y # (x # z))
-> queerSteps = AppL StepC >- StepB
+> queerSteps = AppL stepC >- stepB
 
 > queer : (x, y, z : Comb BWCK) -> :Q # x # y # z = y # (x # z)
-> queer x y z =
->   let stepPrf = queerSteps
->   in eqStep stepPrf
+> queer x y z = eqStep queerSteps
 
 47) Goldfinches
 
@@ -170,9 +154,7 @@ Just to test how to prove the reverse with steps
 > syntax ":G" = Goldfinch;
 
 > goldfinchSteps : Step (:G # x # y # z # w) (x # w # (y # z))
-> goldfinchSteps = AppL (AppL (AppL StepB)) >- AppL StepB >- StepC
+> goldfinchSteps = AppL (AppL (AppL stepB)) >- AppL stepB >- stepC
 
 > goldfinch : (x, y, z, w : Comb BWCK) -> :G # x # y # z # w = x # w # (y # z)
-> goldfinch x y z w =
->   let stepPrf = goldfinchSteps
->   in eqStep stepPrf
+> goldfinch x y z w = eqStep goldfinchSteps

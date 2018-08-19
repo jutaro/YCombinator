@@ -15,7 +15,7 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 > larkFromCBM : (x, y : Comb BWCK) -> (l : Comb BWCK ** l # x # y = x # (y # y))
 > larkFromCBM x y =
 >   let l = :C # :B # :M
->       stepPrf = AppL StepC >- StepB >- AppR mockingBirdSteps
+>       stepPrf = AppL stepC >- stepB >- AppR mockingBirdSteps
 >   in (l ** eqStep stepPrf)
 
 > Lark : Comb BWCK
@@ -24,12 +24,10 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 > syntax ":L" = Lark;
 
 > larkSteps : Step (:L # x # y) (x # (y # y))
-> larkSteps = AppL StepB >- StepW >- StepB
+> larkSteps = AppL stepB >- stepW >- stepB
 
 > larkFromBWB : (x, y : Comb BWCK) -> (:L # x # y = x # (y # y))
-> larkFromBWB x y =
->   let stepPrf = larkSteps
->   in (eqStep stepPrf)
+> larkFromBWB x y = eqStep larkSteps
 
 10) Warblers and Hummingbirds
 
@@ -39,12 +37,10 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 > syntax ":H" = Hummingbird;
 
 > hummingbirdSteps : Step (:H # x # y # z) (x # y # z # y)
-> hummingbirdSteps = AppL (AppL StepB) >- StepC >- AppL (AppL StepB) >- AppL StepB >- StepW >- AppL StepC
+> hummingbirdSteps = AppL (AppL stepB) >- stepC >- AppL (AppL stepB) >- AppL stepB >- stepW >- AppL stepC
 
 > hummingbird : (x, y, z : Comb BWCK) -> (:H # x # y # z = x # y # z # y)
-> hummingbird x y z =
->   let stepPrf = hummingbirdSteps
->   in (eqStep stepPrf)
+> hummingbird x y z = eqStep hummingbirdSteps
 
 12 Starlings
 
@@ -54,9 +50,7 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 > syntax ":S" = Starling;
 
 > starlingSteps : Step (:S # x # y # z) (x # z # (y # z))
-> starlingSteps = AppL (AppL StepB) >- AppL StepB >- StepW >- goldfinchSteps
+> starlingSteps = AppL (AppL stepB) >- AppL stepB >- stepW >- goldfinchSteps
 
 > starling : (x, y, z : Comb BWCK) -> :S # x # y # z  = x # z # (y # z)
-> starling x y z =
->   let stepPrf = starlingSteps
->   in eqStep stepPrf
+> starling x y z = eqStep starlingSteps
