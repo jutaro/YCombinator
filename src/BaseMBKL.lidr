@@ -48,6 +48,18 @@ A base with M, B, K and L
 > stepL : {x, y : Comb MBKL} -> Step (:L # x # y) (x # (y # y))
 > stepL = Prim StepL
 
+> stepM' : {x : Comb MBKL} -> Step' (:M # x) (x # x)
+> stepM' = Prim' StepM
+
+> stepB' : {x, y, z: Comb MBKL} -> Step' (:B # x # y # z) (x # (y # z))
+> stepB' = Prim' StepB
+
+> stepK' : {x, y : Comb MBKL} -> Step' (:K # x # y) x
+> stepK' = Prim' StepK
+
+> stepL' : {x, y : Comb MBKL} -> Step' (:L # x # y) (x # (y # y))
+> stepL' = Prim' StepL
+
 > implementation Eq MBKL where
 >   M == M = True
 >   B == B = True

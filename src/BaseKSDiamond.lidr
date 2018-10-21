@@ -2,21 +2,67 @@
 
 > module BaseKSDiamond
 
+> import Decidable.Equality
+> import Control.Isomorphism
 > import Combinator
 > import Reduction
 > import BaseKS
-> import Decidable.Equality
 
 > %access public export
 > %default total
 
-> normalForm : (a: Comb KS) -> Dec (Not (b : Comb KS ** Not (a = b) -> Step' a b))
-> normalForm a = ?hole1
-> -- normalForm a b unEqPrf (AppL' prf prf2) = ?hole11
+> data NotNormalForm : Comb KS -> Type where
+>   NotNormal : (a : Comb KS) -> (b : Comb KS ** Step' a b) -> NotNormalForm a
 
-> -- normalFormTest1' : (:K # :S) -> Yes
-> -- normalFormTest1' = ?hole
+> data NormalForm : Comb KS -> Type where
+>   Normal : (a : Comb KS) -> Not (b : Comb KS ** Step' a b) -> NormalForm a
 
+> forallToExistence : {X : Type} -> {P: X -> X -> Type} -> (a : X) -> ((b : X) -> Not (P a b)) -> Not (b : X ** P a b)
+> forallToExistence a hyp (b ** p2) = hyp b p2
+
+> normalKSPrf: (b : Comb KS) -> Step' (:K # :S) b -> Void
+> normalKSPrf (:K) step =
+>   case step of
+>     Prim' _ impossible
+>     AppL' _ impossible
+>     AppR' _ impossible
+> normalKSPrf (:S) step =
+>   case step of
+>     Prim' _ impossible
+>     AppL' _ impossible
+>     AppR' _ impossible
+> normalKSPrf (App l r) step =
+>   case step of
+>     Prim' _ impossible
+>     AppL' s2 => case s2 of
+>       Prim' _ impossible
+>       AppL' _ impossible
+>       AppR' _ impossible
+>     AppR' s2 => case s2 of
+>       Prim' _ impossible
+>       AppL' _ impossible
+>       AppR' _ impossible
+
+> normalKS : NormalForm (:K # :S)
+> normalKS = Normal (:K # :S) (forallToExistence (:K # :S) normalKSPrf)
+
+> notNormalKSS : NotNormalForm (:K # :S # :S)
+> notNormalKSS = NotNormal (:K # :S # :S) (:S ** Prim' StepK)
+
+
+
+> {-
+> isoLemma : (P: Type -> Type) -> Iso (Not (b : Type ** P b)) ({b : Type} -> Not (P b))
+> isoLemma P = MkIso from to toFrom fromTo
+>   where from : (Not (b : Type ** P b)) -> (b : Type) -> Not (P b)
+>         from h1 b h3 = h1 (b ** h3)
+>         to : ((b : Type) -> Not (P b)) -> (Not (b : Type ** P b))
+>         to h1 (b ** p) = h1 b p
+>         toFrom : (y: (b : Type) -> Not (P b)) -> from (to y) = y
+>         toFrom y = ?h3
+>         fromTo : (x : Not (b : Type ** P b)) -> to (from x) = x
+>         fromTo x = ?h4
+> -}
 
 > isNormalTest1 : isNormalForm (:K # :S) = True
 > isNormalTest1 = Refl

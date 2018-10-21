@@ -15,7 +15,7 @@
 >     PrimComb : Reduce base => base -> Comb base
 >     App : Comb base -> Comb base -> Comb base
 >
-> -- Combinatory bases are implemented with this type 
+> -- Combinatory bases are implemented with this type
 >   interface Reduce base where
 >     reduceStep : Comb base -> Maybe (Comb base)
 >     PrimRed    : Comb base -> Comb base -> Type
@@ -47,11 +47,11 @@
 > appInjective : {a, b, c, d : Comb t}  -> App a b = App c d -> (a = c, b = d)
 > appInjective Refl = (Refl,Refl)
 
-> uninhabited1 : {a : base} -> (Reduce base) => PrimComb a = App _ _ -> Void
-> uninhabited1 Refl impossible
+> primNotApp : {a : base} -> (Reduce base) => PrimComb a = App _ _ -> Void
+> primNotApp Refl impossible
 
-> uninhabited2 : {a : base} -> (Reduce base) => App _ _ = PrimComb a -> Void
-> uninhabited2 Refl impossible
+> appNotPrim : {a : base} -> (Reduce base) => App _ _ = PrimComb a -> Void
+> appNotPrim Refl impossible
 
 Using here a new interface to use DecEq for "reductional" equality
 
@@ -70,8 +70,8 @@ Using here a new interface to use DecEq for "reductional" equality
 >       structEq (App a b) (App c d) | Yes p | No p' =  No $ \h : App a b = App c d => p' (snd (appInjective h))
 >     structEq (App a b) (App c d) | No p = No $ \h : App a b = App c d => p (fst (appInjective h))
 
->   structEq (PrimComb t) (App l r) = No uninhabited1
->   structEq (App l r) (PrimComb t) = No uninhabited2
+>   structEq (PrimComb t) (App l r) = No primNotApp
+>   structEq (App l r) (PrimComb t) = No appNotPrim
 
 Subterms
 

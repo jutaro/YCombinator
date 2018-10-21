@@ -6,26 +6,19 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > import Reduction
 > import BaseMB
 > import BaseMBKL
+> import Lib
+
 
 > %access public export
 > %default total
 
-> isFondOf : {base : Type} -> (Reduce base, Eq (Comb base)) => (a: Comb base) -> (b : Comb base) -> Bool
-> isFondOf a b = (a # b) == b
-
-> data FondOf : {base : Type} -> (a : Comb base) -> (b : Comb base) -> (prf: b = a # b) -> Type where
->   Fond : FondOf a b prf
 
 1 Significance of the M
 
 > ||| For any Combinator 'a' in MB exist a combinator 'b', so that 'a # b = b'
-> ||| This Combinator 'b' is 'B a M (B a M)'
+> ||| A possible Combinator 'b' is 'B a M (B a M)'
 > anyFondOfSome : (a: Comb MB) -> (b : Comb MB ** b = a # b)
-> anyFondOfSome a =
->   let c   = :B # a # :M
->       cc  = c # c
->       stepPrf = stepB >- AppR stepM
->   in (cc ** eqStep stepPrf)
+> anyFondOfSome a = (:B # a # :M # (:B # a # :M) ** eqStep (stepB >>- AppR stepM))
 
 2 Egocentric
 
@@ -41,7 +34,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > existEgocentric =
 >   let e   = :B # :M # :M
 >       ee  = e # e
->       stepPrf = stepB >- stepM >- AppL stepM >- AppR stepM
+>       stepPrf = stepB >- stepM >- AppL stepM >>- AppR stepM
 >   in (ee ** eqStep stepPrf)
 
 5 An exercise in Composition
@@ -49,7 +42,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > composition : (a, b, c, x : Comb MB) -> (d: Comb MB ** d # a # b # c # x = a # (b # (c # x)))
 > composition a b c x =
 >   let d  = :B # (:B # :B) # :B
->       stepPrf = AppL (AppL (AppL stepB)) >- AppL (AppL stepB) >- stepB >- stepB
+>       stepPrf = AppL (AppL (AppL stepB)) >- AppL (AppL stepB) >- stepB >>- stepB
 >   in (d ** eqStep stepPrf)
 
 6 Compatible
@@ -60,9 +53,8 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 >       y' = :B # c # :M
 >       y  = y' # y'
 >       x  = b # y
->       stepPrf1 = stepB >- stepB >- AppR (AppR stepM)
->       stepPrf2 = StepEq
->   in  (x ** (y ** (eqStep stepPrf1, eqStepX stepPrf2)))
+>       stepPrf1 = stepB >- stepB >>- AppR (AppR stepM)
+>   in  (x ** (y ** (eqStep stepPrf1, Refl)))
 
 7 Happy
 
@@ -72,9 +64,8 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 >       y' = :B # c # :M
 >       y  = y' # y'
 >       x  = a # y
->       stepPrf1 = stepB >- stepB >- AppR (AppR stepM)
->       stepPrf2 = StepEq
->   in  (x ** (y ** (eqStep stepPrf1, eqStepX stepPrf2)))
+>       stepPrf1 = stepB >- stepB >>- AppR (AppR stepM)
+>   in  (x ** (y ** (eqStep stepPrf1, Refl)))
 
 9 Hopelessly Egocentric
 
@@ -82,7 +73,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > hopelesslyEgocentric x =
 >   let b' = :B # :K # :M
 >       b  = b' # b'
->       stepPrf = AppL stepB >- stepK >- stepM
+>       stepPrf = AppL stepB >- stepK >>- stepM
 >   in (b ** eqStep stepPrf)
 
 10 Fixation
@@ -96,7 +87,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > KEgocentricHopeless x hyp =
 >   let stepPrf : Step (:K # :K # x) :K = stepK
 >   in rewrite sym hyp
->   in rewrite eqStep stepPrf
+>   in rewrite eqStep (stepPrf >- Multi_refl)
 >   in rewrite hyp
 >   in Refl
 
@@ -111,4 +102,11 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > egocentricContagious a x y hyp =
 >   rewrite hyp
 >   in ?hole
+
+> isFondOf : {base : Type} -> (Reduce base, Eq (Comb base)) => (a: Comb base) -> (b : Comb base) -> Bool
+> isFondOf a b = (a # b) == b
+
+> data FondOf : {base : Type} -> (a : Comb base) -> (b : Comb base) -> (prf: b = a # b) -> Type where
+>   Fond : FondOf a b prf
+
 > -}
