@@ -188,7 +188,7 @@ L = B W B
 > owl : (x, y : Comb BWCK) -> :O # x # y = y # (x # y)
 > owl x y = eqStep owlSteps
 
-14) Turing rom O and L
+14) Turing from O and L
 
 > turingFromOL : (x, y : Comb BWCK) -> (t : Comb BWCK ** t # x # y = y # (x # x # y))
 > turingFromOL x y =
@@ -219,34 +219,31 @@ L = B W B
 
 18)
 
-> {-}
 > owlSage : (x :Comb BWCK) -> (y : Comb BWCK) -> y # x = x # (y # x) -> x # (:O # y # x) = :O # y # x
 > owlSage x y hyp =
 >   let hyp1 = cong {f=App x} hyp
->       stepPrf = appR owlSteps +>>+ StepRep (sym hyp1) +>>+ Rev owlSteps
->   in (eqStep stepPrf)
+>       stepPrf = appR' (asReversableM owlSteps) +>>+ StepEq (sym hyp1) ->>+ reverseM (asReversableM owlSteps)
+>   in (eqStep' stepPrf)
 
 19)
 
 > owlSage2 : (y : Comb BWCK) -> ((x :Comb BWCK) -> y # x = x # (y # x)) -> :O # (y # :O) = y # :O
 > owlSage2 y hyp =
->   let stepPrf = Rev (StepRep (hyp :O))
->   in (eqStep stepPrf)
+>   let stepPrf = MultiStep (Rev (StepEq (hyp :O))) MultiRefl
+>   in (eqStep' stepPrf)
 
 20)
 
 > owlSage3 : (y : Comb BWCK) -> (x :Comb BWCK) -> :O # y = y ->  y # x = x # (y # x)
 > owlSage3 y x hyp =
 >   let hyp1 = cong {f= \ arg => App arg x} hyp
->       stepPrf = StepRep (sym hyp1) ->>+ owlSteps
->   in (eqStep stepPrf)
+>       stepPrf = StepEq (sym hyp1) ->>+ asReversableM owlSteps
+>   in (eqStep' stepPrf)
 
 22)
 
 > owlSage5 : (x :Comb BWCK) -> (y : Comb BWCK) -> y # x = x # (y # x) -> :O # y = y
 > owlSage5 x y hyp =
->   let hyp1 : Step (:O # y # x) (y # x) = owlSteps ->>+ StepRep (sym hyp)
->       stepPrf = StepRep (combinatorExtensionality x (eqStep hyp1))
->   in (eqStep stepPrf)
-
-> -}
+>   let hyp1 : Multi Step' (:O # y # x) (y # x) = asReversableM owlSteps +>>- StepEq (sym hyp)
+>       stepPrf = MultiStep (StepEq (combinatorExtensionality x (eqStep' hyp1))) MultiRefl
+>   in (eqStep' stepPrf)

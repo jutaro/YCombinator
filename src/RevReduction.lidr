@@ -17,6 +17,7 @@
 >   AppL'    : Step' l res -> Step' (l # r) (res # r)
 >   AppR'    : Step' r res -> Step' (l # r) (l # res)
 >   Rev      : Step' a b -> Step' b a
+>   StepEq   : c1 = c2 -> Step' c1 c2
 
 > -- ||| Transform step to reversable step
 > asReversable : Step a b -> Step' a b
