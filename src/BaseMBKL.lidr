@@ -4,6 +4,7 @@
 
 > import Combinator
 > import Reduction
+> import RevReduction
 > import Decidable.Equality
 
 > %access public export

@@ -6,7 +6,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > import Reduction
 > import BaseMB
 > import BaseMBKL
-> import Lib
+> import Relation
 
 
 > %access public export
@@ -18,7 +18,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > ||| For any Combinator 'a' in MB exist a combinator 'b', so that 'a # b = b'
 > ||| A possible Combinator 'b' is 'B a M (B a M)'
 > anyFondOfSome : (a: Comb MB) -> (b : Comb MB ** b = a # b)
-> anyFondOfSome a = (:B # a # :M # (:B # a # :M) ** eqStep (stepB >>- AppR stepM))
+> anyFondOfSome a = (:B # a # :M # (:B # a # :M) ** eqStep (stepB ->- AppR stepM))
 
 2 Egocentric
 
@@ -34,7 +34,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > existEgocentric =
 >   let e   = :B # :M # :M
 >       ee  = e # e
->       stepPrf = stepB >- stepM >- AppL stepM >>- AppR stepM
+>       stepPrf = stepB ->+ stepM ->+ AppL stepM ->- AppR stepM
 >   in (ee ** eqStep stepPrf)
 
 5 An exercise in Composition
@@ -42,7 +42,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > composition : (a, b, c, x : Comb MB) -> (d: Comb MB ** d # a # b # c # x = a # (b # (c # x)))
 > composition a b c x =
 >   let d  = :B # (:B # :B) # :B
->       stepPrf = AppL (AppL (AppL stepB)) >- AppL (AppL stepB) >- stepB >>- stepB
+>       stepPrf = AppL (AppL (AppL stepB)) ->+ AppL (AppL stepB) ->+ stepB ->- stepB
 >   in (d ** eqStep stepPrf)
 
 6 Compatible
@@ -53,7 +53,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 >       y' = :B # c # :M
 >       y  = y' # y'
 >       x  = b # y
->       stepPrf1 = stepB >- stepB >>- AppR (AppR stepM)
+>       stepPrf1 = stepB ->+ stepB ->- AppR (AppR stepM)
 >   in  (x ** (y ** (eqStep stepPrf1, Refl)))
 
 7 Happy
@@ -64,7 +64,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 >       y' = :B # c # :M
 >       y  = y' # y'
 >       x  = a # y
->       stepPrf1 = stepB >- stepB >>- AppR (AppR stepM)
+>       stepPrf1 = stepB ->+ stepB ->- AppR (AppR stepM)
 >   in  (x ** (y ** (eqStep stepPrf1, Refl)))
 
 9 Hopelessly Egocentric
@@ -73,7 +73,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > hopelesslyEgocentric x =
 >   let b' = :B # :K # :M
 >       b  = b' # b'
->       stepPrf = AppL stepB >- stepK >>- stepM
+>       stepPrf = AppL stepB ->+ stepK ->- stepM
 >   in (b ** eqStep stepPrf)
 
 10 Fixation
@@ -87,7 +87,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > KEgocentricHopeless x hyp =
 >   let stepPrf : Step (:K # :K # x) :K = stepK
 >   in rewrite sym hyp
->   in rewrite eqStep (stepPrf >- Multi_refl)
+>   in rewrite eqStep (stepPrf ->+ MultiRefl)
 >   in rewrite hyp
 >   in Refl
 

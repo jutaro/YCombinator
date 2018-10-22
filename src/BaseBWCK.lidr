@@ -4,6 +4,7 @@
 
 > import Combinator
 > import Reduction
+> import RevReduction
 > import Decidable.Equality
 
 > %access public export
@@ -47,6 +48,18 @@ A base with combinators B, W, C and K
 
 > stepC : {x, y: Comb BWCK} -> Step (:C # x # y # z) (x # z # y)
 > stepC = Prim StepC
+
+> stepK' : {x, y: Comb BWCK} -> Step' (:K # x # y) x
+> stepK' = Prim' StepK
+
+> stepB' : {x, y, z: Comb BWCK} -> Step' (:B # x # y # z) (x # (y # z))
+> stepB' = Prim' StepB
+
+> stepW' : {x, y: Comb BWCK} -> Step' (:W # x # y) (x # y # y)
+> stepW' = Prim' StepW
+
+> stepC' : {x, y: Comb BWCK} -> Step' (:C # x # y # z) (x # z # y)
+> stepC' = Prim' StepC
 
 > implementation Eq BWCK where
 >   B == B = True

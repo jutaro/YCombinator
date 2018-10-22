@@ -1,7 +1,9 @@
 package YCombinator
 
 modules    = Combinator,
+             Relation,
              Reduction,
+             RevReduction,
              BaseKS,
              BaseMB,
              BaseMBKL,

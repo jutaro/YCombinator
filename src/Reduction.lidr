@@ -3,7 +3,7 @@
 > module Reduction
 
 > import Decidable.Equality
-> import Lib
+> import Relation
 > import Combinator
 
 > %access public export
@@ -19,73 +19,41 @@
 > step_not_deterministic : Not (deterministic Step)
 > step_not_deterministic = ?step_not_deterministic_rhs
 
-> (++) : {c1,c2,c3: Comb base} -> Multi Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
-> (++) a Multi_refl = a
-> (++) Multi_refl b = b
-> (++) (Multi_step a Multi_refl) msr = (Multi_step a msr)
-> (++) (Multi_step a msl) msr = Multi_step a (msl ++ msr)
+> infixr 6 +>+
+> (+>+) : {c1,c2,c3: Comb base} -> Multi Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
+> (+>+) a MultiRefl = a
+> (+>+) MultiRefl b = b
+> (+>+) (MultiStep a MultiRefl) msr = (MultiStep a msr)
+> (+>+) (MultiStep a msl) msr = MultiStep a (msl +>+ msr)
 
-> infixr 9 >-
-> (>-) : {c1,c2: Comb b} -> Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
-> (>-) a b = Multi_step a b
+> infixr 6 ->+
+> (->+) : {c1,c2: Comb b} -> Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
+> (->+) a b = MultiStep a b
 
-> infixr 10 >>-
-> (>>-) : {c1,c2,c3: Comb b} -> Step c1 c2 -> Step c2 c3 -> Multi Step c1 c3
-> (>>-) {c3} a b = Multi_step {z=c3} a (Multi_step b Multi_refl)
+> infixr 6 ->-
+> (->-) : {c1,c2,c3: Comb b} -> Step c1 c2 -> Step c2 c3 -> Multi Step c1 c3
+> (->-) {c3} a b = MultiStep {z=c3} a (MultiStep b MultiRefl)
 
--- ||| Two way transformation (reduction plus reverse)
-
-> data Step' : Comb b -> Comb b -> Type where
->   Prim'    : {l, r: Comb b} -> Reduce b => PrimRed l r -> Step' l r
->   AppL'    : Step' l res -> Step' (l # r) (res # r)
->   AppR'    : Step' r res -> Step' (l # r) (l # res)
->   Rev      : Step' a b -> Step' b a
-
-> infixr 9 <>-
-> (<>-) : {c1,c2: Comb b} -> Step' c1 c2 -> Multi Step' c2 c3 -> Multi Step' c1 c3
-> (<>-) a b = Multi_step a b
-
-> infixr 10 <>>-
-> (<>>-) : {c1,c2,c3: Comb b} -> Step' c1 c2 -> Step' c2 c3 -> Multi Step' c1 c3
-> (<>>-) {c3} a b = Multi_step {z=c3} a (Multi_step b Multi_refl)
+> infixr 6+>-
+> (+>-) : {c1,c2: Comb b} -> Multi Step c1 c2 -> Step c2 c3 -> Multi Step c1 c3
+> (+>-) a b = a +>+ MultiStep b MultiRefl
 
 -- >   StepRefl: c1 = c2 -> Step c1 c2
 
-> -- ||| Transform step to reversable step
-> asReversable : Step a b -> Step' a b
-> asReversable (Prim prim) = Prim' prim
-> asReversable (AppL red)  = AppL' (asReversable red)
-> asReversable (AppR red)  = AppR' (asReversable red)
-
-> -- ||| Transform mutiple steps to reversable steps
-> asReversableM : Multi Step a b -> Multi Step' a b
-> asReversableM Multi_refl = Multi_refl
-> asReversableM (Multi_step step multi) = Multi_step (asReversable step) (asReversableM multi)
-
-> -- ||| Reverse mutiple Steps
-> reverseM : Multi Step' a b -> Multi Step' b a
-> reverseM Multi_refl = Multi_refl
-> reverseM (Multi_step step multi) = reverseM' (Multi_step (Rev step) Multi_refl) multi
->   where reverseM' : Multi Step' y x -> Multi Step' y z -> Multi Step' z x
->         reverseM' aggr Multi_refl = aggr
->         reverseM' aggr (Multi_step step multi) = reverseM' (Multi_step (Rev step) aggr) multi
-
-> -- ||| Apply Appl to multiple Steps
+> -- ||| Lift Appl to multiple Steps
 > appL : Multi Step a b -> Multi Step (a # r) (b # r)
-> appL Multi_refl = Multi_refl
-> appL (Multi_step {x}{y}{z} step multi) = Multi_step (AppL step) (appL {a=y} {b=z} multi )
+> appL MultiRefl = MultiRefl
+> appL (MultiStep step multi) = MultiStep (AppL step) (appL multi )
 
-> -- ||| Apply AppR to multiple Steps
+> -- ||| Lift AppR to multiple Steps
 > appR : Multi Step a b -> Multi Step (l # a) (l # b)
-> appR Multi_refl = Multi_refl
-> appR (Multi_step step multi) = Multi_step (AppR step) (appR multi)
+> appR MultiRefl = MultiRefl
+> appR (MultiStep step multi) = MultiStep (AppR step) (appR multi)
 
 > eqStep : {a,b : Comb base} -> Multi Step a b -> a = b
 > eqStep step = believe_me step
 
-> eqStep' : {a,b : Comb base} -> Multi Step' a b -> a = b
-> eqStep' step = believe_me step
-
+> -- ||| Computational reduction
 > stepHead : Reduce b => Comb b -> Maybe (Comb b)
 > stepHead (PrimComb i)       = Nothing
 > stepHead a@(App head redex) = case reduceStep a of
