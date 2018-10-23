@@ -19,13 +19,6 @@
 > step_not_deterministic : Not (deterministic Step)
 > step_not_deterministic = ?step_not_deterministic_rhs
 
-> infixr 6 +>+
-> (+>+) : {c1,c2,c3: Comb base} -> Multi Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
-> (+>+) a MultiRefl = a
-> (+>+) MultiRefl b = b
-> (+>+) (MultiStep a MultiRefl) msr = (MultiStep a msr)
-> (+>+) (MultiStep a msl) msr = MultiStep a (msl +>+ msr)
-
 > infixr 6 ->+
 > (->+) : {c1,c2: Comb b} -> Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
 > (->+) a b = MultiStep a b
@@ -34,11 +27,17 @@
 > (->-) : {c1,c2,c3: Comb b} -> Step c1 c2 -> Step c2 c3 -> Multi Step c1 c3
 > (->-) {c3} a b = MultiStep {z=c3} a (MultiStep b MultiRefl)
 
+> infixr 6 +>+
+> (+>+) : {c1,c2,c3: Comb base} -> Multi Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
+> (+>+) a MultiRefl = a
+> (+>+) MultiRefl b = b
+> (+>+) (MultiStep a MultiRefl) msr = (MultiStep a msr)
+> (+>+) (MultiStep a msl) msr = MultiStep a (msl +>+ msr)
+
 > infixr 6+>-
 > (+>-) : {c1,c2: Comb b} -> Multi Step c1 c2 -> Step c2 c3 -> Multi Step c1 c3
 > (+>-) a b = a +>+ MultiStep b MultiRefl
 
--- >   StepRefl: c1 = c2 -> Step c1 c2
 
 > -- ||| Lift Appl to multiple Steps
 > appL : Multi Step a b -> Multi Step (a # r) (b # r)
@@ -53,17 +52,21 @@
 > eqStep : {a,b : Comb base} -> Multi Step a b -> a = b
 > eqStep step = believe_me step
 
-> -- ||| Computational reduction
+== Computational reduction
+
 > stepHead : Reduce b => Comb b -> Maybe (Comb b)
 > stepHead (PrimComb i)       = Nothing
+> stepHead (Var n)       = Nothing
 > stepHead a@(App head redex) = case reduceStep a of
 >                                 Nothing =>  case stepHead head of
 >                                               Nothing => Nothing
 >                                               Just t => Just (App t redex)
 >                                 Just t => Just t
 
+
 > step : Reduce b => Comb b -> Maybe (Comb b)
 > step (PrimComb i)       = Nothing
+> step (Var n)       = Nothing
 > step a@(App head redex) = case reduceStep a of
 >                             Nothing =>  case step head of
 >                                           Nothing => case step redex of

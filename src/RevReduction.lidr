@@ -10,8 +10,7 @@
 > %access public export
 > %default total
 
--- ||| Two way transformation (reduction plus reverse)
-
+> ||| Two way transformation (reduction plus reverse)
 > data Step' : Comb b -> Comb b -> Type where
 >   Prim'    : {l, r: Comb b} -> Reduce b => PrimRed l r -> Step' l r
 >   AppL'    : Step' l res -> Step' (l # r) (res # r)
@@ -19,18 +18,18 @@
 >   Rev      : Step' a b -> Step' b a
 >   StepEq   : c1 = c2 -> Step' c1 c2
 
-> -- ||| Transform step to reversable step
+> ||| Transform step to reversable step
 > asReversable : Step a b -> Step' a b
 > asReversable (Prim prim) = Prim' prim
 > asReversable (AppL red)  = AppL' (asReversable red)
 > asReversable (AppR red)  = AppR' (asReversable red)
 
-> -- ||| Transform mutiple steps to reversable steps
+> ||| Transform mutiple steps to reversable steps
 > asReversableM : Multi Step a b -> Multi Step' a b
 > asReversableM MultiRefl = MultiRefl
 > asReversableM (MultiStep step multi) = MultiStep (asReversable step) (asReversableM multi)
 
-> -- ||| Reverse mutiple Steps
+> ||| Reverse mutiple Steps
 > reverseM : Multi Step' a b -> Multi Step' b a
 > reverseM MultiRefl = MultiRefl
 > reverseM (MultiStep step multi) = reverseM' (MultiStep (Rev step) MultiRefl) multi
