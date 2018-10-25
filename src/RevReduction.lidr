@@ -66,5 +66,13 @@
 > appR' MultiRefl = MultiRefl
 > appR' (MultiStep step multi) = MultiStep (AppR' step) (appR' multi)
 
-> eqStep' : {a,b : Comb base} -> Multi Step' a b -> a = b
+> ||| Defining equality of terms as weak equality
+> eqStep' : {a,b : Comb base} -> Step' a b -> a = b
 > eqStep' step = believe_me step
+
+> ||| Defining equality of terms as weak equality
+> eqSteps' : {a,b : Comb base} -> Multi Step' a b -> a = b
+> eqSteps' MultiRefl = Refl
+> eqSteps' (MultiStep s m) =
+>   let indHyp = eqSteps' m
+>   in trans (eqStep' s) indHyp

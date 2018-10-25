@@ -2,67 +2,74 @@
 
 > module CombinatorProp
 
+> import Decidable.Equality
+> import Control.Isomorphism
 > import Combinator
-> import Reduction
 > import Relation
-> import BaseBWCK
+> import Reduction
+> import BaseKS
 
 > %access public export
 > %default total
+> %hide Prelude.Nat.S
 
-Program:
-Define arity and Classification of combinators:
+> ||| We give a counterexample to prove this
+> step_not_deterministic : Not (deterministic (Step {b= KS}))
+> step_not_deterministic hyp =
+>   case hyp (:K # (:K # Var "x" # Var "y") # Var "z")
+>             (:K # Var "x" # Var "y")
+>             (:K # Var "x" # Var "z")
+>             (Prim StepK)
+>             (AppL (AppR (Prim StepK))) of
+>     Refl impossible
 
-  - Identity
 
-  - Associator
+> ||| Show that (K S) is in normal form
+> normalKS : normalForm (Step {b = KS}) (:K # :S)
+> normalKS = forallToExistence (\t, h => case eqStep h of
+>                                           hyp => normalKS' t h hyp)
+>   where normalKS': (b : Comb KS) -> Step (:K # :S) b -> (:K # :S) = b -> Void
+>         normalKS' (:K) step Refl impossible
+>         normalKS' (:S) step Refl impossible
+>         normalKS' (Var _) step Refl impossible
+>         normalKS' (App l r) step hyp =
+>           case step of
+>             Prim _ impossible
+>             AppL s2 => case s2 of
+>               Prim _ impossible
+>               AppL _ impossible
+>               AppR _ impossible
+>             AppR s2 => case s2 of
+>               Prim _ impossible
+>               AppL _ impossible
+>               AppR _ impossible
 
-  - Cancellator
 
-  - Permutator
-
-  - Duplicator
-
-  - RegularCombinator
-
-  - ProperCombinator
-
-The arity is the minimum number of args on which a reduction happens
-
-> ||| Spine of a combinator as list
-> spine : Reduce b => Comb b -> List (Comb b)
-> spine (App l r) = r :: spine l
-> spine other = [other]
-
-> ||| Generator of var names (step1)
-> primVarNames : List String
-> primVarNames = ["x", "y", "z", "u", "v", "w"]
-
-> ||| Generator of var names (step2)
-> varNames : List String
-> varNames = primVarNames ++ concat (map (\i => map (\n => show i ++ n) primVarNames) [1..6])
-
-> ||| Generator of Vars
-> varCombs : Reduce base => List (Comb base)
-> varCombs = map Var varNames
-
-> ||| Returns arity of combinator
-> arity : Reduce base => Comb base -> Maybe Nat
-> arity comb = case step comb of
->                 Just _ => Just 0
->                 Nothing => arity' 1 comb varCombs
->   where arity' : Reduce base => Nat -> Comb base -> List (Comb base) -> Maybe Nat
->         arity' n acc (hd :: tail) =
->           let combi = acc # hd
->           in  case step combi of
->                 Just _ => Just n
->                 Nothing => arity' (S n) combi tail
->         arity' n acc [] = Nothing
-
-Identity Combinators have the property Z x1 .. xn -> x1 .. xn
 
 
 > {-}
-> isIdentity : Comb base -> Type
-> isIdentity c = ?holei -- Multi Step c
+> normalKS : NormalForm (:K # :S)
+> normalKS = Normal (:K # :S) (forallToExistence (:K # :S) normalKSPrf)
+
+> notNormalKSS : NotNormalForm (:K # :S # :S)
+> notNormalKSS = NotNormal (:K # :S # :S) (:S ** Prim' StepK)
+
+
+> isoLemma : (P: Type -> Type) -> Iso (Not (b : Type ** P b)) ({b : Type} -> Not (P b))
+> isoLemma P = MkIso from to toFrom fromTo
+>   where from : (Not (b : Type ** P b)) -> (b : Type) -> Not (P b)
+>         from h1 b h3 = h1 (b ** h3)
+>         to : ((b : Type) -> Not (P b)) -> (Not (b : Type ** P b))
+>         to h1 (b ** p) = h1 b p
+>         toFrom : (y: (b : Type) -> Not (P b)) -> from (to y) = y
+>         toFrom y = ?h3
+>         fromTo : (x : Not (b : Type ** P b)) -> to (from x) = x
+>         fromTo x = ?h4
+
+> isNormalTest1 : isNormalForm (:K # :S) = True
+> isNormalTest1 = Refl
+
+> isNormalTest2 : isNormalForm (:K # :S # :S) = False
+> isNormalTest2 = Refl
+
 > -}

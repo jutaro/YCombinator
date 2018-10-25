@@ -9,15 +9,14 @@
 > %access public export
 > %default total
 
--- Single step reduction
-
-> data Step : Comb b -> Comb b -> Type where
+> ||| Single step reduction or One-step reduction
+> data Step : {b: Type} -> Comb b -> Comb b -> Type where
 >   Prim    : {l, r: Comb b} -> Reduce b => PrimRed l r -> Step l r
->   AppL    : Step l res -> Step (l # r) (res # r)
->   AppR    : Step r res -> Step (l # r) (l # res)
+>   AppL    : {l, r: Comb b} -> Step l res -> Step (l # r) (res # r)
+>   AppR    : {l, r: Comb b} -> Step r res -> Step (l # r) (l # res)
 
-> step_not_deterministic : Not (deterministic Step)
-> step_not_deterministic = ?step_not_deterministic_rhs
+Weak reduction is the transitive closure of One-step reduction.
+We use the Multi Relation to define it as Multi Step
 
 > infixr 6 ->+
 > (->+) : {c1,c2: Comb b} -> Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
@@ -38,25 +37,43 @@
 > (+>-) : {c1,c2: Comb b} -> Multi Step c1 c2 -> Step c2 c3 -> Multi Step c1 c3
 > (+>-) a b = a +>+ MultiStep b MultiRefl
 
-
-> -- ||| Lift Appl to multiple Steps
+> ||| Lift Appl to multiple Steps
 > appL : Multi Step a b -> Multi Step (a # r) (b # r)
 > appL MultiRefl = MultiRefl
 > appL (MultiStep step multi) = MultiStep (AppL step) (appL multi )
 
-> -- ||| Lift AppR to multiple Steps
+> ||| Lift AppR to multiple Steps
 > appR : Multi Step a b -> Multi Step (l # a) (l # b)
 > appR MultiRefl = MultiRefl
 > appR (MultiStep step multi) = MultiStep (AppR step) (appR multi)
 
-> eqStep : {a,b : Comb base} -> Multi Step a b -> a = b
+> ||| Terms are defined as equal if they are in a step relation
+> eqStep : {a,b : Comb base} -> Step a b -> a = b
 > eqStep step = believe_me step
+
+> ||| Defining this equality transitiv for mutiple steps gives weak equality
+> eqSteps : {a,b : Comb base} -> Multi Step a b -> a = b
+> eqSteps MultiRefl = Refl
+> eqSteps (MultiStep s m) =
+>   let indHyp = eqSteps m
+>   in trans (eqStep s) indHyp
+
+> ||| DecEq instance for weak
+> implementation (StructEq (Comb b), Reduce b) => DecEq (Comb b) where
+>   decEq l r =
+>     case structEq l r of
+>       Yes p =>  Yes $ p
+>       No  p =>  ?hole --let (s : Step l r) = _
+>                 --in ?hole2
 
 == Computational reduction
 
+> ||| Take a step in computational reduction on the head redex.
+> ||| Return just the new combinator if possible, or Nothing if the head is not a redex
+> ||| which is the same as to say the term is in weak head normal form
 > stepHead : Reduce b => Comb b -> Maybe (Comb b)
 > stepHead (PrimComb i)       = Nothing
-> stepHead (Var n)       = Nothing
+> stepHead (Var n)            = Nothing
 > stepHead a@(App head redex) = case reduceStep a of
 >                                 Nothing =>  case stepHead head of
 >                                               Nothing => Nothing
@@ -64,25 +81,35 @@
 >                                 Just t => Just t
 
 
+> ||| Take a step in computational reduction on the first possible redex starting from the head.
+> ||| Return just the new combinator if possible, or Nothing if the head is not a redex
+> ||| which is the same as to say the term is in weak normal form
 > step : Reduce b => Comb b -> Maybe (Comb b)
 > step (PrimComb i)       = Nothing
-> step (Var n)       = Nothing
-> step a@(App head redex) = case reduceStep a of
->                             Nothing =>  case step head of
->                                           Nothing => case step redex of
->                                                           Nothing => Nothing
->                                                           Just r => Just (App head r)
->                                           Just h => Just (App h redex)
->                             Just t => Just t
+> step (Var n)            = Nothing
+> step a@(App head redex) =
+>   case reduceStep a of
+>     Just t => Just t
+>     Nothing =>
+>       case step head of
+>         Just h => Just (App h redex)
+>         Nothing =>
+>           case step redex of
+>             Nothing => Nothing
+>             Just r => Just (App head r)
 
 -- Reduction strategies
 
+> ||| Applies multiple head steps, until a normal form is reached,
+> ||| or calculates forever, if no weak head normal form exists
 > partial weakHeadReduction : Reduce b => Comb b -> Comb b
 > weakHeadReduction term =
 >   case stepHead term of
 >     Nothing => term
 >     Just newComb => weakHeadReduction newComb
 
+> ||| Applies multiple head steps, until a normal form is reached,
+> ||| or the maximum number of steps has been taken
 > weakHeadReductionCut : Reduce b => Nat -> Comb b -> Maybe (Comb b)
 > weakHeadReductionCut (S x) term =
 >   case stepHead term of
@@ -90,88 +117,45 @@
 >     Just newComb => weakHeadReductionCut x newComb
 > weakHeadReductionCut Z term = Nothing
 
+> ||| Short name for convenience
 > whr : Reduce b => Comb b -> Comb b
 > whr c =
->   case weakHeadReductionCut 1000 c of
+>   case weakHeadReductionCut 300 c of
 >       Nothing => c
 >       Just t => t
 
-> partial reduction : Reduce b => Comb b -> Comb b
-> reduction term =
->   case step term of
->     Nothing => term
->     Just newComb => reduction newComb
-
-> reductionCut : Reduce b => Nat -> Comb b -> Maybe (Comb b)
-> reductionCut (S x) term =
->   case step term of
->     Nothing => Just term
->     Just newComb => reductionCut x newComb
-> reductionCut Z term = Nothing
-
-> reduct : Reduce b => Comb b -> Comb b
-> reduct c =
->   case reductionCut 100 c of
->       Nothing => c
->       Just t => t
-
-> implementation (StructEq (Comb b), Reduce b) => DecEq (Comb b) where
->   decEq l r =
->     case structEq l r of
->       Yes p =>  Yes $ p
->       No p  =>  let l' = reduct l
->                     r' = reduct r
->                 in case structEq l' r' of
->                   Yes p1 => let hyp : (l = r) = believe_me p1
->                             in Yes $ hyp
->                   No p1 =>  let hyp : ((l = r) -> Void) = believe_me p1
->                             in No $ (\ h : l = r => hyp h)
-
-> isNormalForm : Reduce b => Comb b -> Bool
-> isNormalForm c = case step c of
+> ||| Computes if a term is in weak head normal form
+> isWeakHeadNormalForm : Reduce b => Comb b -> Bool
+> isWeakHeadNormalForm c = case stepHead c of
 >                      Nothing => True
 >                      Just _ => False
 
->{-
+> ||| Computes if a term is in weak normal form
+> isWeakNormalForm : Reduce b => Comb b -> Bool
+> isWeakNormalForm c = case step c of
+>                      Nothing => True
+>                      Just _ => False
 
-Proof that subterm implement Subterm? How to do this?
+> ||| Applies multiple steps, until a normal form is reached,
+> ||| or calculates forever, if no weak normal form exists
+> partial weakReduction : Reduce b => Comb b -> Comb b
+> weakReduction term =
+>   case step term of
+>     Nothing => term
+>     Just newComb => weakReduction newComb
 
->
+> ||| Applies multiple steps, until a normal form is reached,
+> ||| or the maximum number of steps has been taken
+> weakReductionCut : Reduce b => Nat -> Comb b -> Maybe (Comb b)
+> weakReductionCut (S x) term =
+>   case step term of
+>     Nothing => Just term
+>     Just newComb => weakReductionCut x newComb
+> weakReductionCut Z term = Nothing
 
--- > subtermLemma : {t : Type} -> DecEq t =>(a : Comb t) ->  {prf : Dec (a = a)} ->subterm' a a prf = True
--- > subtermLemma  x {prf = Yes eqPrf} = Refl
--- > subtermLemma  x {prf = No contra} = void (contra (Refl))
-
-We have the problem that Subterm may point to a right subterm, while the algorithm always detects the leftmost subterm.
-So they give the result, but we can't proof them equal
-
-> subtermCorrect : {t : Type} -> (DecEq t, Reduce t) => {a, b: Comb t} -> (prf: Dec (a = b)) -> Subterm a b -> subterm' a b prf = True
-> subtermCorrect {a=term} {b=term} (Yes p) SubtermEq = Refl
-> subtermCorrect {a=term} {b=term} (No contra) SubtermEq = void (contra Refl)
-> subtermCorrect {a=term} {b=App l r} (No contra) (SubtermAppL lp) =
->   let indHyp = subtermCorrect {a=term} {b=l} (decEq term l) lp
->   in rewrite indHyp
->   in Refl
-> subtermCorrect {a=term} {b=App l r} (No contra) (SubtermAppR rp) =
->   let indHypAbsurd = subtermCorrect {a=term} {b=l} (decEq term l) ?subtermCorrect0
->       indHyp = subtermCorrect {a=term} {b=r} (decEq term r) rp
->   in rewrite indHyp
->   in rewrite indHypAbsurd
->   in ?subtermCorrect1
-
-> lemma : a || b = True -> Either (a = True) (b = True)
-> lemma {a = True} {b = True} prf = Left prf
-> lemma {a = True} {b = False} prf = Left prf
-> lemma {a = False} {b = True} prf = Right prf
-> lemma {a = False} {b = False} Refl impossible
-
-> subtermComplete : {t : Type} -> (DecEq t, Reduce t) => {a, b: Comb t} -> (prf : Dec (a = b))
->                                                 -> (hyp : subterm' a b prf = True) -> Subterm a b
-> subtermComplete {a} {b} (Yes p) hyp = rewrite p in SubtermEq
-> subtermComplete {a} {b=App l r} (No p) hyp =
->   let indHyp1 = subtermComplete {a} {b=l} (decEq a l) ?hole0
->       indHyp2 = subtermComplete {a} {b=r} (decEq a r) ?hole1
->   in ?subtermComplete
-> subtermComplete {a} {b=Var _} (No p) hyp = absurd hyp
-> subtermComplete {a} {b=PrimComb _} (No p) hyp = absurd hyp
-> -}
+> ||| Short name for convenience
+> wr : Reduce b => Comb b -> Comb b
+> wr c =
+>   case weakReductionCut 300 c of
+>       Nothing => c
+>       Just t => t

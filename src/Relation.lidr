@@ -15,6 +15,9 @@ pairs of elements of [X].  *)
 > deterministic : {xt: Type} -> (r: Relation xt) -> Type
 > deterministic {xt} r = (x, y1, y2: xt) -> r x y1 -> r x y2 -> y1 = y2
 
+> normalForm : {X:Type} -> Relation X -> X -> Type
+> normalForm r t = Not (t' ** r t t')
+
 > data Multi: {X: Type} -> Relation X -> Relation X where
 >   MultiRefl  : {X: Type} -> {R: Relation X} -> {x : X} ->  Multi R x x
 >   MultiStep  : {X: Type} -> {R: Relation X} -> {x, y, z : X} -> R x y -> Multi R y z -> Multi R x z
@@ -30,3 +33,8 @@ pairs of elements of [X].  *)
 >      MultiStep r mx =>
 >         let indHyp = multiTrans mx m2
 >         in MultiStep r indHyp
+
+> -- Doesn't really belong here
+
+> forallToExistence : {X: Type} -> {P: X -> Type} -> ((b : X) -> Not (P b)) -> Not (b : X ** P b)
+> forallToExistence hyp (b ** p2) = hyp b p2

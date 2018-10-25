@@ -23,7 +23,7 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > doveSteps = AppL (AppL stepB) ->- stepB
 
 > dove : (x, y, z, w: Comb BWCK) -> :D # x # y # z # w = x # y # (z # w)
-> dove x y z w = eqStep doveSteps
+> dove x y z w = eqSteps doveSteps
 
 6) Blackbirds
 
@@ -34,7 +34,7 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > blackbirdSteps = AppL (AppL (AppL stepB)) ->+ AppL stepB ->- stepB
 
 > blackbird : (x, y, z, w: Comb BWCK) -> Blackbird # x # y # z # w = x # (y # z # w)
-> blackbird x y z w = eqStep blackbirdSteps
+> blackbird x y z w = eqSteps blackbirdSteps
 
 7) Eagle
 
@@ -47,7 +47,7 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > eagleSteps = AppL (AppL (AppL stepB)) ->+ blackbirdSteps
 
 > eagle : (x, y, z, w, v: Comb BWCK) -> :E # x # y # z # w # v = x # y # (z # w # v)
-> eagle x y z w v = eqStep eagleSteps
+> eagle x y z w v = eqSteps eagleSteps
 
 13) Mockingbird
 
@@ -60,14 +60,14 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > mockingBirdSteps = stepW ->+ AppL stepW ->- AppL stepK
 
 > mockingbirdFromWarbler : (x : Comb BWCK) -> (:M # x = x # x)
-> mockingbirdFromWarbler x = eqStep mockingBirdSteps
+> mockingbirdFromWarbler x = eqSteps mockingBirdSteps
 
 Just to test how to prove the reverse with steps
 
 > revMockingbirdFromWarbler : (x : Comb BWCK) -> (x # x = :M # x)
 > revMockingbirdFromWarbler x =
 >   let stepPrf = reverseM (asReversableM mockingBirdSteps)
->   in (eqStep' stepPrf)
+>   in (eqSteps' stepPrf)
 
 
 15) Identity
@@ -81,7 +81,7 @@ Just to test how to prove the reverse with steps
 > identitySteps = stepW ->- stepK
 
 > identity : (x : Comb BWCK) -> :I # x = x
-> identity x = eqStep identitySteps
+> identity x = eqSteps identitySteps
 
 16) Cardinal and Identity
 
@@ -89,7 +89,7 @@ Just to test how to prove the reverse with steps
 > identityCK x =
 >   let i = :C # :K # :K
 >       stepPrf = stepC ->- stepK
->   in (i ** eqStep stepPrf)
+>   in (i ** eqSteps stepPrf)
 
 17) Thrushes
 
@@ -102,7 +102,7 @@ Just to test how to prove the reverse with steps
 > trushSteps = stepC ->+ AppL stepW ->- AppL stepK
 
 > trush : (x, y : Comb BWCK) -> :T # x # y = y # x
-> trush x y = eqStep trushSteps
+> trush x y = eqSteps trushSteps
 
 20) Robins
 
@@ -115,7 +115,7 @@ Just to test how to prove the reverse with steps
 > robinSteps = AppL (AppL stepB) ->+ stepB ->+ stepC ->+ AppL stepW ->- AppL stepK
 
 > robin : (x, y, z : Comb BWCK) -> :R # x # y # z = y # z # x
-> robin x y z = eqStep robinSteps
+> robin x y z = eqSteps robinSteps
 
 21) Robins and Cardinals
 
@@ -123,7 +123,7 @@ Just to test how to prove the reverse with steps
 > cardinalFromRobin x y z =
 >   let c = :R # :R # :R
 >       stepPrf = appL (appL robinSteps) +>+ appL robinSteps +>+ robinSteps
->   in (c ** eqStep stepPrf)
+>   in (c ** eqSteps stepPrf)
 
 37) Queer Bird
 
@@ -136,7 +136,7 @@ Just to test how to prove the reverse with steps
 > queerSteps = AppL stepC ->- stepB
 
 > queer : (x, y, z : Comb BWCK) -> :Q # x # y # z = y # (x # z)
-> queer x y z = eqStep queerSteps
+> queer x y z = eqSteps queerSteps
 
 47) Goldfinches
 
@@ -149,4 +149,4 @@ Just to test how to prove the reverse with steps
 > goldfinchSteps = AppL (AppL (AppL stepB)) ->+ AppL stepB ->- stepC
 
 > goldfinch : (x, y, z, w : Comb BWCK) -> :G # x # y # z # w = x # w # (y # z)
-> goldfinch x y z w = eqStep goldfinchSteps
+> goldfinch x y z w = eqSteps goldfinchSteps

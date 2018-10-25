@@ -65,11 +65,11 @@
 
 Using here a new interface to use DecEq for "reductional" equality
 
+
+> -- Correct is structEq l r -> l = r, but Not (structEq) -> Not (l = r) is not true
 > interface StructEq t where
 >   ||| Decide whether two elements of `t` are propositionally equal
 >   total structEq : (x1, x2 : t) -> Dec (x1 = x2)
-
-
 
 > implementation (DecEq t, Reduce t) => StructEq (Comb t) where
 >   structEq (PrimComb a) (PrimComb b) with (decEq a b)

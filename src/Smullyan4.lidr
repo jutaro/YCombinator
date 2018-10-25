@@ -17,7 +17,7 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 > larkFromCBM x y =
 >   let l = :C # :B # :M
 >       stepPrf = AppL stepC ->+ stepB ->+ appR mockingBirdSteps
->   in (l ** eqStep stepPrf)
+>   in (l ** eqSteps stepPrf)
 
 > Lark : Comb BWCK
 > Lark = :B # :W # :B
@@ -28,7 +28,7 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 > larkSteps = AppL stepB ->+ stepW ->- stepB
 
 > larkFromBWB : (x, y : Comb BWCK) -> (:L # x # y = x # (y # y))
-> larkFromBWB x y = eqStep larkSteps
+> larkFromBWB x y = eqSteps larkSteps
 
 10) Warblers and Hummingbirds
 
@@ -41,7 +41,7 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 > hummingbirdSteps = AppL (AppL stepB) ->+ stepC ->+ AppL (AppL stepB) ->+ AppL stepB ->+ stepW ->- AppL stepC
 
 > hummingbird : (x, y, z : Comb BWCK) -> (:H # x # y # z = x # y # z # y)
-> hummingbird x y z = eqStep hummingbirdSteps
+> hummingbird x y z = eqSteps hummingbirdSteps
 
 12 Starlings
 
@@ -54,4 +54,4 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 > starlingSteps = AppL (AppL stepB) ->+ AppL stepB ->+ stepW ->+ goldfinchSteps
 
 > starling : (x, y, z : Comb BWCK) -> :S # x # y # z  = x # z # (y # z)
-> starling x y z = eqStep starlingSteps
+> starling x y z = eqSteps starlingSteps

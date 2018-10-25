@@ -12,7 +12,9 @@ modules    = Combinator,
              Smullyan2,
              Smullyan3,
              Smullyan4,
-             Smullyan5
+             Smullyan5,
+             CombinatorProp,
+             CombinatorCompProp
 
 
 main       = Smullyan5

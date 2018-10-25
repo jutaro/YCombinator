@@ -28,7 +28,7 @@ x(Yx) = Yx or: x # (Y # x) == Y # x
 >                 +>>+ appL' (asReversableM robinSteps)
 >                 +>>+ stepB'
 >                 ->>- AppR' (Rev stepB')
->   in (phi ** eqStep' stepPrf)
+>   in (phi ** eqSteps' stepPrf)
 
 
 2) From M, B, C
@@ -41,7 +41,7 @@ x(Yx) = Yx or: x # (Y # x) == Y # x
 >                   +>>+ AppL' stepC'
 >                   ->>+ stepB'
 >                   ->>- AppR' (Rev stepB')
->   in (phi ** eqStep' stepPrf)
+>   in (phi ** eqSteps' stepPrf)
 
 
 3) From M, B, L
@@ -54,7 +54,7 @@ x(Yx) = Yx or: x # (Y # x) == Y # x
 >                   +>>+ asReversableM larkSteps
 >                   +>>+ reverseM (appR' (asReversableM mockingBirdSteps))
 >                   +>>- Rev (AppR' stepB')
->   in (phi ** eqStep' stepPrf)
+>   in (phi ** eqSteps' stepPrf)
 
 4) From M, B, W
 
@@ -70,7 +70,7 @@ The same as before, as L = B W B
 >                   ->>+ stepB'
 >                   ->>+ reverseM (appR' (asReversableM mockingBirdSteps))
 >                   +>>- Rev (AppR' stepB')
->   in (phi ** eqStep' stepPrf)
+>   in (phi ** eqSteps' stepPrf)
 
 6) From Q, L, W
 
@@ -84,7 +84,7 @@ The same as before, as L = B W B
 >                   +>>+ reverseM (appR' (asReversableM queerSteps))
 >                   +>>+ reverseM (appR' (appL' (asReversableM queerSteps)))
 >                   +>>- Rev (AppR' stepW')
->   in (phi ** eqStep' stepPrf)
+>   in (phi ** eqSteps' stepPrf)
 
 6) From Q, L, I
 
@@ -98,7 +98,7 @@ The same as before, as L = B W B
 >                 +>>+ reverseM (appR' (asReversableM identitySteps))
 >                 +>>+ reverseM (appR' (asReversableM larkSteps))
 >                 +>>+ reverseM (appR' (asReversableM queerSteps))
->   in (phi ** eqStep' stepPrf)
+>   in (phi ** eqSteps' stepPrf)
 
 7) From B, W, C
 
@@ -119,7 +119,7 @@ L = B W B
 >                 ->>+ Rev (AppR' (AppL' stepC'))
 >                 ->>+ Rev (AppR' (AppL' stepB'))
 >                 ->>- Rev (AppR' stepW')
->   in (phi ** eqStep' stepPrf)
+>   in (phi ** eqSteps' stepPrf)
 
 8) From Q M
 
@@ -130,7 +130,7 @@ L = B W B
 >                   +>>+ asReversableM mockingBirdSteps
 >                   +>>+ asReversableM queerSteps
 >                   +>>+ reverseM (appR' (asReversableM queerSteps))
->   in (phi ** eqStep' stepPrf)
+>   in (phi ** eqSteps' stepPrf)
 
 9) From S L
 
@@ -140,7 +140,7 @@ L = B W B
 >       stepPrf = asReversableM starlingSteps
 >                   +>>+ asReversableM larkSteps
 >                   +>>+ reverseM (appR' (asReversableM starlingSteps))
->   in (phi ** eqStep' stepPrf)
+>   in (phi ** eqSteps' stepPrf)
 
 10) From B W S
 
@@ -152,7 +152,7 @@ L = B W B
 >                   +>>+ asReversableM larkSteps
 >                   +>>+ reverseM (appR' (asReversableM starlingSteps))
 >                   +>>- Rev (AppR' (AppL' stepW'))
->   in (phi ** eqStep' stepPrf)
+>   in (phi ** eqSteps' stepPrf)
 
 11) TuringBird
 
@@ -165,7 +165,7 @@ L = B W B
 > turingSteps = AppL stepB ->+ stepW ->+ appL (appL larkSteps) +>+ queerSteps
 
 > turing : (x, y : Comb BWCK) -> :U # x # y = y # (x # x # y)
-> turing x y = eqStep turingSteps
+> turing x y = eqSteps turingSteps
 
 12) From U
 
@@ -173,7 +173,7 @@ L = B W B
 > sageFromU x =
 >   let phi = :U # :U
 >       stepPrf = turingSteps
->   in (phi ** eqStep stepPrf)
+>   in (phi ** eqSteps stepPrf)
 
 13) Owls
 
@@ -186,7 +186,7 @@ L = B W B
 > owlSteps = AppL stepB ->+ stepW ->+ AppL stepC ->- stepB
 
 > owl : (x, y : Comb BWCK) -> :O # x # y = y # (x # y)
-> owl x y = eqStep owlSteps
+> owl x y = eqSteps owlSteps
 
 14) Turing from O and L
 
@@ -194,7 +194,7 @@ L = B W B
 > turingFromOL x y =
 >   let t = :L # :O
 >       stepPrf = appL larkSteps +>+ owlSteps
->   in (t ** eqStep stepPrf)
+>   in (t ** eqSteps stepPrf)
 
 15) Mockingbird from O I
 
@@ -202,7 +202,7 @@ L = B W B
 > mockingbirdFromOI x =
 >   let m = :O # :I
 >       stepPrf = owlSteps +>+ appR identitySteps
->   in (m ** eqStep stepPrf)
+>   in (m ** eqSteps stepPrf)
 
 16) Owl from S I
 
@@ -210,7 +210,7 @@ L = B W B
 > owlFromSI x y =
 >   let o = :S # :I
 >       stepPrf = starlingSteps +>+ appL identitySteps
->   in (o ** eqStep stepPrf)
+>   in (o ** eqSteps stepPrf)
 
 17) x y = y -> x (x y) = x y
 
@@ -223,14 +223,14 @@ L = B W B
 > owlSage x y hyp =
 >   let hyp1 = cong {f=App x} hyp
 >       stepPrf = appR' (asReversableM owlSteps) +>>+ StepEq (sym hyp1) ->>+ reverseM (asReversableM owlSteps)
->   in (eqStep' stepPrf)
+>   in (eqSteps' stepPrf)
 
 19)
 
 > owlSage2 : (y : Comb BWCK) -> ((x :Comb BWCK) -> y # x = x # (y # x)) -> :O # (y # :O) = y # :O
 > owlSage2 y hyp =
 >   let stepPrf = MultiStep (Rev (StepEq (hyp :O))) MultiRefl
->   in (eqStep' stepPrf)
+>   in (eqSteps' stepPrf)
 
 20)
 
@@ -238,12 +238,12 @@ L = B W B
 > owlSage3 y x hyp =
 >   let hyp1 = cong {f= \ arg => App arg x} hyp
 >       stepPrf = StepEq (sym hyp1) ->>+ asReversableM owlSteps
->   in (eqStep' stepPrf)
+>   in (eqSteps' stepPrf)
 
 22)
 
 > owlSage5 : (x :Comb BWCK) -> (y : Comb BWCK) -> y # x = x # (y # x) -> :O # y = y
 > owlSage5 x y hyp =
 >   let hyp1 : Multi Step' (:O # y # x) (y # x) = asReversableM owlSteps +>>- StepEq (sym hyp)
->       stepPrf = MultiStep (StepEq (combinatorExtensionality x (eqStep' hyp1))) MultiRefl
->   in (eqStep' stepPrf)
+>       stepPrf = MultiStep (StepEq (combinatorExtensionality x (eqSteps' hyp1))) MultiRefl
+>   in (eqSteps' stepPrf)
