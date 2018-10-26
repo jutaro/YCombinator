@@ -12,8 +12,8 @@
 > ||| Single step reduction or One-step reduction
 > data Step : {b: Type} -> Comb b -> Comb b -> Type where
 >   Prim    : {l, r: Comb b} -> Reduce b => PrimRed l r -> Step l r
->   AppL    : {l, r: Comb b} -> Step l res -> Step (l # r) (res # r)
->   AppR    : {l, r: Comb b} -> Step r res -> Step (l # r) (l # res)
+>   AppL    : Step l res -> Step (l # r) (res # r)
+>   AppR    : Step r res -> Step (l # r) (l # res)
 
 Weak reduction is the transitive closure of One-step reduction.
 We use the Multi Relation to define it as Multi Step
@@ -48,6 +48,7 @@ We use the Multi Relation to define it as Multi Step
 > appR (MultiStep step multi) = MultiStep (AppR step) (appR multi)
 
 > ||| Terms are defined as equal if they are in a step relation
+> ||| We should only need this one believe me!
 > eqStep : {a,b : Comb base} -> Step a b -> a = b
 > eqStep step = believe_me step
 
@@ -58,27 +59,21 @@ We use the Multi Relation to define it as Multi Step
 >   let indHyp = eqSteps m
 >   in trans (eqStep s) indHyp
 
-> ||| DecEq instance for weak
-> implementation (StructEq (Comb b), Reduce b) => DecEq (Comb b) where
->   decEq l r =
->     case structEq l r of
->       Yes p =>  Yes $ p
->       No  p =>  ?hole --let (s : Step l r) = _
->                 --in ?hole2
-
 == Computational reduction
 
 > ||| Take a step in computational reduction on the head redex.
-> ||| Return just the new combinator if possible, or Nothing if the head is not a redex
+> ||| Return Just the new combinator if possible, or Nothing if the head is not a redex,
 > ||| which is the same as to say the term is in weak head normal form
 > stepHead : Reduce b => Comb b -> Maybe (Comb b)
 > stepHead (PrimComb i)       = Nothing
 > stepHead (Var n)            = Nothing
-> stepHead a@(App head redex) = case reduceStep a of
->                                 Nothing =>  case stepHead head of
->                                               Nothing => Nothing
->                                               Just t => Just (App t redex)
->                                 Just t => Just t
+> stepHead a@(App head redex) =
+>   case reduceStep a of
+>     Nothing =>
+>       case stepHead head of
+>         Nothing => Nothing
+>         Just t => Just (App t redex)
+>     Just t => Just t
 
 
 > ||| Take a step in computational reduction on the first possible redex starting from the head.
@@ -118,11 +113,8 @@ We use the Multi Relation to define it as Multi Step
 > weakHeadReductionCut Z term = Nothing
 
 > ||| Short name for convenience
-> whr : Reduce b => Comb b -> Comb b
-> whr c =
->   case weakHeadReductionCut 300 c of
->       Nothing => c
->       Just t => t
+> whr : Reduce b => Comb b -> Maybe (Comb b)
+> whr = weakHeadReductionCut 300
 
 > ||| Computes if a term is in weak head normal form
 > isWeakHeadNormalForm : Reduce b => Comb b -> Bool
@@ -154,8 +146,21 @@ We use the Multi Relation to define it as Multi Step
 > weakReductionCut Z term = Nothing
 
 > ||| Short name for convenience
-> wr : Reduce b => Comb b -> Comb b
-> wr c =
->   case weakReductionCut 300 c of
->       Nothing => c
->       Just t => t
+> wr : Reduce b => Comb b -> Maybe (Comb b)
+> wr = weakReductionCut 300
+
+> ||| DecEq instance for weak equality
+> ||| Base this on eqStep, when similarity of whr and Steps is established
+> implementation (StructEq b, StructEq (Comb b), Reduce b) => DecEq (Comb b) where
+>   decEq l r =
+>     case structEq l r of
+>       Just p =>  Yes $ p
+>       Nothing =>
+>         let ln = whr l
+>             rn = whr r
+>         in  case (ln, rn) of
+>               (Just ln', Just rn') =>
+>                 case structEq ln' rn' of
+>                   Just p =>   Yes $ believe_me p
+>                   Nothing =>  No $ believe_me ()
+>               _ =>  No $ believe_me ()

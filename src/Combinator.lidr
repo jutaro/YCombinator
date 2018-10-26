@@ -67,43 +67,38 @@ Using here a new interface to use DecEq for "reductional" equality
 
 
 > -- Correct is structEq l r -> l = r, but Not (structEq) -> Not (l = r) is not true
+> -- as we will define '=' as weak equality
 > interface StructEq t where
 >   ||| Decide whether two elements of `t` are propositionally equal
->   total structEq : (x1, x2 : t) -> Dec (x1 = x2)
+>   total structEq : (x1, x2 : Comb t) -> Maybe (x1 = x2)
 
-> implementation (DecEq t, Reduce t) => StructEq (Comb t) where
+> implementation (DecEq base, Reduce base, DecEq (Comb base)) => StructEq (Comb base) where
 >   structEq (PrimComb a) (PrimComb b) with (decEq a b)
->     | Yes prf  = Yes $ cong prf
->     | No contra  = No $ \h : PrimComb a = PrimComb b => contra (combInjective h)
-
+>     | Yes prf  = Just $ cong prf
+>     | No contra  = Nothing
 >   structEq (App a b) (App c d) with (structEq a c)
->     structEq (App a b) (App c d) | Yes p with (structEq b d)
->       structEq (App a b) (App c d) | Yes p | Yes p' = Yes $ appCongruent p p'
->       structEq (App a b) (App c d) | Yes p | No p' =  No $ \h : App a b = App c d => p' (snd (appInjective h))
->     structEq (App a b) (App c d) | No p = No $ \h : App a b = App c d => p (fst (appInjective h))
-
+>     structEq (App a b) (App c d) | Just p with (structEq b d)
+>       structEq (App a b) (App c d) | Just p | Just p' = Just $ appCongruent p p'
+>       structEq (App a b) (App c d) | Just p | Nothing =  Nothing
+>     structEq (App a b) (App c d) | Nothing = Nothing
 >   structEq (Var n1) (Var n2) with (decEq n1 n2)
->     | Yes p = Yes $ cong p
->     | No contra = No $ \h : Combinator.Var n1 = Combinator.Var n2 => contra (varInjective h)
-
->   structEq (PrimComb t) (App l r) = No primNotApp
->   structEq (App l r) (PrimComb t) = No (negEqSym primNotApp)
->   structEq (Var n) (PrimComb t)   = No varNotPrim
->   structEq (PrimComb t) (Var n)   = No (negEqSym varNotPrim)
->   structEq (Var n) (App l r)      = No varNotApp
->   structEq (App l r) (Var n)      = No (negEqSym varNotApp)
-
-
-
+>     | Yes p = Just $ cong p
+>     | No contra = Nothing
+>   structEq (PrimComb t) (App l r) = Nothing
+>   structEq (App l r) (PrimComb t) = Nothing
+>   structEq (Var n) (PrimComb t)   = Nothing
+>   structEq (PrimComb t) (Var n)   = Nothing
+>   structEq (Var n) (App l r)      = Nothing
+>   structEq (App l r) (Var n)      = Nothing
 
 Subterms
 
-> subterm' : (DecEq t, Reduce t) => (t1, t2 : Comb t) -> Dec (t1 = t2) -> Bool
-> subterm' a b         (Yes _) = True
-> subterm' a (App l r) (No  _) = subterm' a l (structEq a l) || subterm' a r (structEq a r)
-> subterm' a _         (No  _) = False
+> subterm' : (StructEq t, Reduce t) => (t1, t2 : Comb t) -> Maybe (t1 = t2) -> Bool
+> subterm' a b         (Just _) = True
+> subterm' a (App l r) Nothing  = subterm' a l (structEq a l) || subterm' a r (structEq a r)
+> subterm' a _         Nothing  = False
 
-> subterm : (StructEq (Comb t), DecEq t, Reduce t) => (t1, t2 : Comb t) -> Bool
+> subterm : (StructEq (Comb t), StructEq t, Reduce t) => (t1, t2 : Comb t) -> Bool
 > subterm a b = subterm' a b (structEq a b)
 
 > data Subterm : Comb b -> Comb b -> Type where
