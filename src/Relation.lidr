@@ -30,7 +30,6 @@ pairs of elements of [X].  *)
 
 == Properties of relations
 
-
 > deterministic : {xt: Type} -> (r: Relation xt) -> Type
 > deterministic {xt} r = (x, y1, y2: xt) -> r x y1 -> r x y2 -> y1 = y2
 
@@ -50,7 +49,7 @@ pairs of elements of [X].  *)
 > symmetricIsConfluent r sym = \ x, y1, y2, r1, r2 => (x ** (sym r1, sym r2))
 
 > confluenceToMulti : {xt: Type} -> {r: Relation xt} -> confluent r -> confluent (Multi r)
-> confluenceToMulti {r} hyp = \x, y1, y2, m1, m2 =>
+> confluenceToMulti {r} hyp x y1 y2 m1 m2 =
 >   case m1 of
 >     MultiRefl =>
 >       case m2 of
@@ -59,11 +58,23 @@ pairs of elements of [X].  *)
 >     MultiStep st1 {y=y1'} ms1 =>
 >       case m2 of
 >         MultiRefl => (y1 ** (MultiRefl,m1))
+
+-- >           -- case is redundant
+-- >         MultiStep st2 MultiRefl =>
+-- >           let (z1 ** (hl1,hr1)) = hyp x y1' y2 st1 st2
+-- >               (zo ** (hlo,hro)) = confluenceToMulti {r} hyp y1' y1 z1
+-- >                   ms1 (assert_smaller m2 (MultiStep hl1 MultiRefl))
+-- >           in (zo ** (hlo,multiTrans (MultiStep hr1 MultiRefl) hro))
+
 >         MultiStep st2 {y=y2'} ms2 =>
->           let (z1 ** (hl,hr)) = hyp x y1' y2' st1 st2
->               (z2 ** (i1l,i1r)) = confluenceToMulti {r} hyp x y1 y1' m1 (MultiStep st1 MultiRefl)
->               (z3 ** (i2l,i2r)) = confluenceToMulti {r} hyp x y2 y2' m2 (MultiStep st2 MultiRefl)
->           in (z3 ** (multiTrans i1l  ?hole,i2l))
+>           let (z1 ** (hl1,hr1)) = hyp x y1' y2' st1 st2
+>               (zo ** (hlo,hro)) = confluenceToMulti {r} hyp y1' y1 z1
+>                   ms1 (assert_smaller m2 (MultiStep hl1 MultiRefl))
+>               (zu ** (hlu,hru)) = confluenceToMulti {r} hyp y2' y2 z1
+>                   ms2 (assert_smaller m2 (MultiStep hr1 MultiRefl))
+>               (z **  (hlf,hrf)) = confluenceToMulti {r} hyp z1 zo zu
+>                   hro (assert_smaller m2 hru) -- how to justify this assert_smaller?
+>           in (z ** (multiTrans hlo hlf,multiTrans hlu hrf))
 
 > -- Doesn't really belong here
 
