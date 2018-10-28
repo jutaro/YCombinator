@@ -29,38 +29,6 @@ A base with M, B, K and L
 >   StepK   : {x, y : Comb MBKL} -> Reduce MBKL => PrimStep (:K # x # y) x
 >   StepL   : {x, y : Comb MBKL} -> Reduce MBKL => PrimStep (:L # x # y) (x # (y # y))
 
-> implementation Reduce MBKL where
->   reduceStep (App (PrimComb M) x) = Just (x # x)
->   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
->   reduceStep (App (App (PrimComb K) x) y) = Just x
->   reduceStep (App (App (PrimComb L) x) y) = Just (x # (y # y))
->   reduceStep _ = Nothing
->   PrimRed = PrimStep
-
-> stepM : {x : Comb MBKL} -> Step (:M # x) (x # x)
-> stepM = Prim StepM
-
-> stepB : {x, y, z: Comb MBKL} -> Step (:B # x # y # z) (x # (y # z))
-> stepB = Prim StepB
-
-> stepK : {x, y : Comb MBKL} -> Step (:K # x # y) x
-> stepK = Prim StepK
-
-> stepL : {x, y : Comb MBKL} -> Step (:L # x # y) (x # (y # y))
-> stepL = Prim StepL
-
-> stepM' : {x : Comb MBKL} -> Step' (:M # x) (x # x)
-> stepM' = Prim' StepM
-
-> stepB' : {x, y, z: Comb MBKL} -> Step' (:B # x # y # z) (x # (y # z))
-> stepB' = Prim' StepB
-
-> stepK' : {x, y : Comb MBKL} -> Step' (:K # x # y) x
-> stepK' = Prim' StepK
-
-> stepL' : {x, y : Comb MBKL} -> Step' (:L # x # y) (x # (y # y))
-> stepL' = Prim' StepL
-
 > implementation Eq MBKL where
 >   M == M = True
 >   B == B = True
@@ -109,3 +77,35 @@ A base with M, B, K and L
 >   show B = ":B"
 >   show K = ":K"
 >   show L = ":L"
+
+> implementation Reduce MBKL where
+>   reduceStep (App (PrimComb M) x) = Just (x # x)
+>   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
+>   reduceStep (App (App (PrimComb K) x) y) = Just x
+>   reduceStep (App (App (PrimComb L) x) y) = Just (x # (y # y))
+>   reduceStep _ = Nothing
+>   PrimRed = PrimStep
+
+> stepM : {x : Comb MBKL} -> Step (:M # x) (x # x)
+> stepM = Prim StepM
+
+> stepB : {x, y, z: Comb MBKL} -> Step (:B # x # y # z) (x # (y # z))
+> stepB = Prim StepB
+
+> stepK : {x, y : Comb MBKL} -> Step (:K # x # y) x
+> stepK = Prim StepK
+
+> stepL : {x, y : Comb MBKL} -> Step (:L # x # y) (x # (y # y))
+> stepL = Prim StepL
+
+> stepM' : {x : Comb MBKL} -> Step' (:M # x) (x # x)
+> stepM' = Prim' StepM
+
+> stepB' : {x, y, z: Comb MBKL} -> Step' (:B # x # y # z) (x # (y # z))
+> stepB' = Prim' StepB
+
+> stepK' : {x, y : Comb MBKL} -> Step' (:K # x # y) x
+> stepK' = Prim' StepK
+
+> stepL' : {x, y : Comb MBKL} -> Step' (:L # x # y) (x # (y # y))
+> stepL' = Prim' StepL

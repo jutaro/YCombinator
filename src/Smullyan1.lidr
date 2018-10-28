@@ -82,14 +82,20 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > fixation x z = (z ** id)
 
 11 A fact about K
+>  -- TODO !!!
 
-> KEgocentricHopeless : (x : Comb MBKL) -> :K # :K = :K -> :K # x = :K
-> KEgocentricHopeless x hyp =
->   let stepPrf : Step (:K # :K # x) :K = stepK
->   in rewrite sym hyp
->   in rewrite eqSteps (stepPrf ->+ MultiRefl)
->   in rewrite hyp
->   in Refl
+-- > kEgocentricHopeless: (x: Comb MBKL) -> :K # :K = :K -> :K # x = :K
+-- > kEgocentricHopeless x hyp =
+-- >   let stepPrf : Step (:K # :K # x) :K = stepK
+-- >       hyp2 : ((:K # :K # x) = :K) = eqStep stepPrf
+-- >   in rewrite sym hyp
+-- >   in rewrite hyp2
+-- >   in ?hole
+
+
+
+-- >   in rewrite hyp
+-- >   in Refl
 
 15
 

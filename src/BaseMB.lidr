@@ -22,18 +22,6 @@ A base with M and B
 >   StepM   : {x: Comb MB} -> Reduce MB => PrimStep (:M # x) (x # x)
 >   StepB   : {x, y: Comb MB} -> Reduce MB => PrimStep (:B # x # y # z) (x # (y # z))
 
-> implementation Reduce MB where
->   reduceStep (App (PrimComb M) x) = Just (x # x)
->   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
->   reduceStep _ = Nothing
->   PrimRed = PrimStep
-
-> stepM : {x : Comb MB} -> Step (:M # x) (x # x)
-> stepM = Prim StepM
-
-> stepB : {x, y, z: Comb MB} -> Step (:B # x # y # z) (x # (y # z))
-> stepB = Prim StepB
-
 > implementation Eq MB where
 >   M == M = True
 >   B == B = True
@@ -51,3 +39,15 @@ A base with M and B
 > implementation Show MB where
 >   show M = ":M"
 >   show B = ":B"
+
+> implementation Reduce MB where
+>   reduceStep (App (PrimComb M) x) = Just (x # x)
+>   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
+>   reduceStep _ = Nothing
+>   PrimRed = PrimStep
+
+> stepM : {x : Comb MB} -> Step (:M # x) (x # x)
+> stepM = Prim StepM
+
+> stepB : {x, y, z: Comb MB} -> Step (:B # x # y # z) (x # (y # z))
+> stepB = Prim StepB

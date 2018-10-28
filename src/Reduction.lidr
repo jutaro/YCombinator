@@ -49,11 +49,11 @@ We use the Multi Relation to define it as Multi Step
 
 > ||| Terms are defined as equal if they are in a step relation
 > ||| We should only need this one believe me!
-> eqStep : {a,b : Comb base} -> Step a b -> a = b
+> eqStep : {base: Type} -> {a,b : Comb base} -> Step a b -> a = b
 > eqStep step = believe_me step
 
 > ||| Defining this equality transitiv for mutiple steps gives weak equality
-> eqSteps : {a,b : Comb base} -> Multi Step a b -> a = b
+> eqSteps : {base: Type} -> {a,b : Comb base} -> Multi Step a b -> a = b
 > eqSteps MultiRefl = Refl
 > eqSteps (MultiStep s m) =
 >   let indHyp = eqSteps m
@@ -148,19 +148,3 @@ We use the Multi Relation to define it as Multi Step
 > ||| Short name for convenience
 > wr : Reduce b => Comb b -> Maybe (Comb b)
 > wr = weakReductionCut 300
-
-> ||| DecEq instance for weak equality
-> ||| Base this on eqStep, when similarity of whr and Steps is established
-> implementation (StructEq b, StructEq (Comb b), Reduce b) => DecEq (Comb b) where
->   decEq l r =
->     case structEq l r of
->       Just p =>  Yes $ p
->       Nothing =>
->         let ln = whr l
->             rn = whr r
->         in  case (ln, rn) of
->               (Just ln', Just rn') =>
->                 case structEq ln' rn' of
->                   Just p =>   Yes $ believe_me p
->                   Nothing =>  No $ believe_me ()
->               _ =>  No $ believe_me ()

@@ -7,6 +7,7 @@
 > %access public export
 > %default total
 > %hide Language.Reflection.Var
+> %hide Prelude.Show.Eq
 
 > mutual
 >
@@ -14,30 +15,30 @@
 > -- ||| Vars are in the meta language (Idris)
 >   data Comb : (base: Type) -> Type where
 >     PrimComb : Reduce base => base -> Comb base
->     App : Comb base -> Comb base -> Comb base
+>     App : {base: Type} -> Comb base -> Comb base -> Comb base
 >     Var : String -> Comb base
 >
 > -- Combinatory bases are implemented with this type
->   interface Reduce base where
+>   interface DecEq base => Reduce base where
 >     reduceStep : Comb base -> Maybe (Comb base)
 >     PrimRed    : Comb base -> Comb base -> Type
 
 > infixl 9 #
 > -- ||| Application operator
-> (#) : Comb base -> Comb base -> Comb base
+> (#) : {base:Type} -> Comb base -> Comb base -> Comb base
 > (#) = App
 
 > -- this is a specialized version of `appInjective` below
-> combinatorExtensionality : {a, b : Comb base} -> (x : Comb base) -> a # x = b # x -> a = b
+> combinatorExtensionality : {a, b : Comb base} -> (x : Comb base) -> Reduce base => a # x = b # x -> a = b
 > combinatorExtensionality _ Refl = Refl
 
-> implementation (Eq t) => Eq (Comb t) where
+> implementation Eq base => Eq (Comb base) where
 >   (PrimComb a) == (PrimComb b) = a == b
 >   (App a b)    == (App c d)    = a == c && b == d
 >   (Var n1)     == (Var n2)     = n1 == n2
 >   _            == _            = False
 
-> implementation (Show t) => Show (Comb t) where
+> implementation Show base => Show (Comb base) where
 >   showPrec d (PrimComb c) = show c
 >   showPrec d (Var n)   = show n
 >   showPrec d (App a b) = showParens (d > Open) (showPrec Open a ++ " # " ++ showPrec App b)
@@ -48,10 +49,10 @@
 > varInjective : Var a = Var b -> a = b
 > varInjective Refl = Refl
 
-> appCongruent : {a, b, c, d : Comb t} -> a = c -> b = d -> App a b = App c d
+> appCongruent : {a, b, c, d : Comb base} -> a = c -> b = d -> App a b = App c d
 > appCongruent Refl Refl = Refl
 
-> appInjective : {a, b, c, d : Comb t}  -> App a b = App c d -> (a = c, b = d)
+> appInjective : {a, b, c, d : Comb base}  -> App a b = App c d -> (a = c, b = d)
 > appInjective Refl = (Refl,Refl)
 
 > primNotApp : {a : base} -> (Reduce base) => PrimComb a = App _ _ -> Void
@@ -69,10 +70,10 @@ Using here a new interface to use DecEq for "reductional" equality
 > -- Correct is structEq l r -> l = r, but Not (structEq) -> Not (l = r) is not true
 > -- as we will define '=' as weak equality
 > interface StructEq t where
->   ||| Decide whether two elements of `t` are propositionally equal
->   total structEq : (x1, x2 : Comb t) -> Maybe (x1 = x2)
+>   ||| Decide whether two elements of `base` are propositionally equal
+>   total structEq : (x1, x2 : t) -> Maybe (x1 = x2)
 
-> implementation (DecEq base, Reduce base, DecEq (Comb base)) => StructEq (Comb base) where
+> implementation (DecEq base) => StructEq (Comb base) where
 >   structEq (PrimComb a) (PrimComb b) with (decEq a b)
 >     | Yes prf  = Just $ cong prf
 >     | No contra  = Nothing
@@ -84,22 +85,22 @@ Using here a new interface to use DecEq for "reductional" equality
 >   structEq (Var n1) (Var n2) with (decEq n1 n2)
 >     | Yes p = Just $ cong p
 >     | No contra = Nothing
->   structEq (PrimComb t) (App l r) = Nothing
->   structEq (App l r) (PrimComb t) = Nothing
->   structEq (Var n) (PrimComb t)   = Nothing
->   structEq (PrimComb t) (Var n)   = Nothing
+>   structEq (PrimComb c) (App l r) = Nothing
+>   structEq (App l r) (PrimComb c) = Nothing
+>   structEq (Var n) (PrimComb c)   = Nothing
+>   structEq (PrimComb c) (Var n)   = Nothing
 >   structEq (Var n) (App l r)      = Nothing
 >   structEq (App l r) (Var n)      = Nothing
 
 Subterms
 
-> subterm' : (StructEq t, Reduce t) => (t1, t2 : Comb t) -> Maybe (t1 = t2) -> Bool
-> subterm' a b         (Just _) = True
-> subterm' a (App l r) Nothing  = subterm' a l (structEq a l) || subterm' a r (structEq a r)
-> subterm' a _         Nothing  = False
+> subterm' : StructEq (Comb base) => (t1, t2 : Comb base) -> Maybe (t1 = t2) -> Bool
+> subterm' t1 t2            (Just _)  = True
+> subterm' t1 (App t2l t2r) Nothing   = subterm' t1 t2l (structEq t1 t2l) || subterm' t1 t2r (structEq t1 t2r)
+> subterm' t1 _             Nothing   = False
 
-> subterm : (StructEq (Comb t), StructEq t, Reduce t) => (t1, t2 : Comb t) -> Bool
-> subterm a b = subterm' a b (structEq a b)
+> subterm : StructEq (Comb base) => (t1, t2 : Comb base) -> Bool
+> subterm t1 t2 = subterm' t1 t2 (structEq t1 t2)
 
 > data Subterm : Comb b -> Comb b -> Type where
 >   SubtermEq : Subterm x x
@@ -124,7 +125,7 @@ Subterms
 >   let indHyp = subtermInAppR pl
 >   in SubtermAppL indHyp
 
-> subtermTransitive : {t: Type} -> {a, b, c : Comb t} -> Subterm a b -> Subterm b c -> Subterm a c
+> subtermTransitive : {base: Type} -> {a, b, c : Comb base} -> Subterm a b -> Subterm b c -> Subterm a c
 > subtermTransitive SubtermEq SubtermEq = SubtermEq
 > subtermTransitive SubtermEq r = r
 > subtermTransitive l SubtermEq = l
@@ -145,10 +146,10 @@ Subterms
 >       indHyp = subtermTransitive {b=bl} {c=cr} pl pr'
 >   in SubtermAppR indHyp
 
-> subtermReflexive : {t: Type} -> {a : Comb t} -> Subterm a a
+> subtermReflexive : {base: Type} -> {a : Comb base} -> Subterm a a
 > subtermReflexive = SubtermEq
 
-> termImpossible : {t: Type} -> {a, b : Comb t} ->  Not (App a b = a)
+> termImpossible : {base: Type} -> {a, b : Comb base} ->  Not (App a b = a)
 > termImpossible Refl impossible
 
 > mutual
@@ -166,7 +167,7 @@ Subterms
 >   subtermImpossibleL {a=App _ _} (SubtermAppL s) = subtermImpossibleL $ subtermInAppL s
 >   subtermImpossibleL {a=App _ _} (SubtermAppR s) = subtermImpossibleR $ subtermInAppL s
 
-> subtermAntisymmetric : {n, m : Comb t} -> Subterm m n -> Subterm n m -> n = m
+> subtermAntisymmetric : {n, m : Comb base} -> Subterm m n -> Subterm n m -> n = m
 > subtermAntisymmetric                        SubtermEq        _               = Refl
 > subtermAntisymmetric                        _                SubtermEq       = Refl
 > subtermAntisymmetric {n=l1 # _} {m=l2 # _} (SubtermAppL s1) (SubtermAppL s2) =

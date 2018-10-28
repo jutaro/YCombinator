@@ -12,12 +12,6 @@ pairs of elements of [X].  *)
 > Relation : Type -> Type
 > Relation t = t -> t -> Type
 
-> deterministic : {xt: Type} -> (r: Relation xt) -> Type
-> deterministic {xt} r = (x, y1, y2: xt) -> r x y1 -> r x y2 -> y1 = y2
-
-> normalForm : {X:Type} -> Relation X -> X -> Type
-> normalForm r t = Not (t' ** r t t')
-
 > data Multi: {X: Type} -> Relation X -> Relation X where
 >   MultiRefl  : {X: Type} -> {R: Relation X} -> {x : X} ->  Multi R x x
 >   MultiStep  : {X: Type} -> {R: Relation X} -> {x, y, z : X} -> R x y -> Multi R y z -> Multi R x z
@@ -33,6 +27,43 @@ pairs of elements of [X].  *)
 >      MultiStep r mx =>
 >         let indHyp = multiTrans mx m2
 >         in MultiStep r indHyp
+
+== Properties of relations
+
+
+> deterministic : {xt: Type} -> (r: Relation xt) -> Type
+> deterministic {xt} r = (x, y1, y2: xt) -> r x y1 -> r x y2 -> y1 = y2
+
+> normalForm : {xt:Type} -> Relation xt -> xt -> Type
+> normalForm r t = Not (t' ** r t t')
+
+> symmetric : {xt:Type} -> Relation xt -> Type
+> symmetric {xt} r = {x,y : xt} -> r x y -> r y x
+
+> reflexive : {xt:Type} -> Relation xt -> Type
+> reflexive {xt} r = {x : xt} -> r x x
+
+> confluent : {xt: Type} -> (r: Relation xt) -> Type
+> confluent {xt} r = (x, y1, y2: xt) -> r x y1 -> r x y2 -> (z: xt ** (r y1 z, r y2 z))
+
+> symmetricIsConfluent : {xt: Type} -> (rt : Relation xt) -> symmetric rt -> confluent rt
+> symmetricIsConfluent r sym = \ x, y1, y2, r1, r2 => (x ** (sym r1, sym r2))
+
+> confluenceToMulti : {xt: Type} -> {r: Relation xt} -> confluent r -> confluent (Multi r)
+> confluenceToMulti {r} hyp = \x, y1, y2, m1, m2 =>
+>   case m1 of
+>     MultiRefl =>
+>       case m2 of
+>         MultiRefl => (x ** (MultiRefl, MultiRefl))
+>         MultiStep st ms => (y2 ** (m2,MultiRefl))
+>     MultiStep st1 {y=y1'} ms1 =>
+>       case m2 of
+>         MultiRefl => (y1 ** (MultiRefl,m1))
+>         MultiStep st2 {y=y2'} ms2 =>
+>           let (z1 ** (hl,hr)) = hyp x y1' y2' st1 st2
+>               (z2 ** (i1l,i1r)) = confluenceToMulti {r} hyp x y1 y1' m1 (MultiStep st1 MultiRefl)
+>               (z3 ** (i2l,i2r)) = confluenceToMulti {r} hyp x y2 y2' m2 (MultiStep st2 MultiRefl)
+>           in (z3 ** (multiTrans i1l  ?hole,i2l))
 
 > -- Doesn't really belong here
 

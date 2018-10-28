@@ -29,38 +29,6 @@ A base with combinators B, W, C and K
 >   StepC   : {x, y, z: Comb BWCK} -> Reduce BWCK => PrimStep (:C # x # y # z) (x # z # y)
 >   StepK   : {x, y: Comb BWCK} -> Reduce BWCK => PrimStep (:K # x # y) x
 
-> implementation Reduce BWCK where
->   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
->   reduceStep (App (App (PrimComb W) x) y) = Just (x # y # y)
->   reduceStep (App (App (App (PrimComb C) x) y) z) = Just (x # z # y)
->   reduceStep (App (App (PrimComb K) x) y) = Just x
->   reduceStep _ = Nothing
->   PrimRed = PrimStep
-
-> stepK : {x, y: Comb BWCK} -> Step (:K # x # y) x
-> stepK = Prim StepK
-
-> stepB : {x, y, z: Comb BWCK} -> Step (:B # x # y # z) (x # (y # z))
-> stepB = Prim StepB
-
-> stepW : {x, y: Comb BWCK} -> Step (:W # x # y) (x # y # y)
-> stepW = Prim StepW
-
-> stepC : {x, y: Comb BWCK} -> Step (:C # x # y # z) (x # z # y)
-> stepC = Prim StepC
-
-> stepK' : {x, y: Comb BWCK} -> Step' (:K # x # y) x
-> stepK' = Prim' StepK
-
-> stepB' : {x, y, z: Comb BWCK} -> Step' (:B # x # y # z) (x # (y # z))
-> stepB' = Prim' StepB
-
-> stepW' : {x, y: Comb BWCK} -> Step' (:W # x # y) (x # y # y)
-> stepW' = Prim' StepW
-
-> stepC' : {x, y: Comb BWCK} -> Step' (:C # x # y # z) (x # z # y)
-> stepC' = Prim' StepC
-
 > implementation Eq BWCK where
 >   B == B = True
 >   W == W = True
@@ -113,3 +81,35 @@ A base with combinators B, W, C and K
 >   show W = ":W"
 >   show C = ":C"
 >   show K = ":K"
+
+> implementation Reduce BWCK where
+>   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
+>   reduceStep (App (App (PrimComb W) x) y) = Just (x # y # y)
+>   reduceStep (App (App (App (PrimComb C) x) y) z) = Just (x # z # y)
+>   reduceStep (App (App (PrimComb K) x) y) = Just x
+>   reduceStep _ = Nothing
+>   PrimRed = PrimStep
+
+> stepK : {x, y: Comb BWCK} -> Step (:K # x # y) x
+> stepK = Prim StepK
+
+> stepB : {x, y, z: Comb BWCK} -> Step (:B # x # y # z) (x # (y # z))
+> stepB = Prim StepB
+
+> stepW : {x, y: Comb BWCK} -> Step (:W # x # y) (x # y # y)
+> stepW = Prim StepW
+
+> stepC : {x, y: Comb BWCK} -> Step (:C # x # y # z) (x # z # y)
+> stepC = Prim StepC
+
+> stepK' : {x, y: Comb BWCK} -> Step' (:K # x # y) x
+> stepK' = Prim' StepK
+
+> stepB' : {x, y, z: Comb BWCK} -> Step' (:B # x # y # z) (x # (y # z))
+> stepB' = Prim' StepB
+
+> stepW' : {x, y: Comb BWCK} -> Step' (:W # x # y) (x # y # y)
+> stepW' = Prim' StepW
+
+> stepC' : {x, y: Comb BWCK} -> Step' (:C # x # y # z) (x # z # y)
+> stepC' = Prim' StepC

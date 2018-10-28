@@ -18,22 +18,6 @@ A basic combinator base
 > syntax ":K" = PrimComb K;
 > syntax ":S" = PrimComb S;
 
-> data PrimStep : Comb KS -> Comb KS -> Type where
->   StepK   :  {x, y: Comb KS} -> Reduce KS => PrimStep (:K # x # y) x
->   StepS   :  {x, y, z: Comb KS} -> Reduce KS => PrimStep (:S # x # y # z) ((x # z) # (y # z))
-
-> implementation Reduce KS where
->   reduceStep (App (App (PrimComb K) x) y) = Just x
->   reduceStep (App (App (App (PrimComb S) x) y) z) = Just ((x # z) # (y # z))
->   reduceStep _ = Nothing
->   PrimRed = PrimStep
-
-> stepK : {x, y: Comb KS} -> Step (:K # x # y) x
-> stepK = Prim StepK
-
-> stepS : {x, y, z: Comb KS} -> Step (:S # x # y # z) ((x # z) # (y # z))
-> stepS = Prim StepS
-
 > implementation Eq KS where
 >   K == K = True
 >   S == S = True
@@ -52,11 +36,26 @@ A basic combinator base
 >   show K = ":K"
 >   show S = ":S"
 
+> data PrimStep : Comb KS -> Comb KS -> Type where
+>   StepK   :  {x, y: Comb KS} -> Reduce KS => PrimStep (:K # x # y) x
+>   StepS   :  {x, y, z: Comb KS} -> Reduce KS => PrimStep (:S # x # y # z) ((x # z) # (y # z))
+
+> implementation Reduce KS where
+>   reduceStep (App (App (PrimComb K) x) y) = Just x
+>   reduceStep (App (App (App (PrimComb S) x) y) z) = Just ((x # z) # (y # z))
+>   reduceStep _ = Nothing
+>   PrimRed = PrimStep
+
+> stepK : {x, y: Comb KS} -> Step (:K # x # y) x
+> stepK = Prim StepK
+
+> stepS : {x, y, z: Comb KS} -> Step (:S # x # y # z) ((x # z) # (y # z))
+> stepS = Prim StepS
 
 Test code
 
 >
-> stepTest1 : whr (:K # :S # :K) = :S
+> stepTest1 : whr (:K # :S # :K) = Just :S
 > stepTest1 = Refl
 
 > stepPrf1 : Step (:K # :S # :K) :S
