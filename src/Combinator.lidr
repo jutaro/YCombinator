@@ -12,15 +12,17 @@
 > mutual
 >
 > -- ||| a term can be a a primitive combinator or an application
-> -- ||| Vars are in the meta language (Idris)
+> -- ||| or a variable. Variables are just placeholders and no substitution will be defined
 >   data Comb : (base: Type) -> Type where
 >     PrimComb : Reduce base => base -> Comb base
 >     App : {base: Type} -> Comb base -> Comb base -> Comb base
 >     Var : String -> Comb base
 >
-> -- Combinatory bases are implemented with this type
+> -- Combinatory bases are implemented with this interface
 >   interface DecEq base => Reduce base where
+>     ||| computational reduction
 >     reduceStep : Comb base -> Maybe (Comb base)
+>     ||| type level reduction
 >     PrimRed    : Comb base -> Comb base -> Type
 
 > infixl 9 #

@@ -5,9 +5,12 @@
 > import Decidable.Equality
 > import Relation
 > import Combinator
+> import Data.List.Quantifiers
+
 
 > %access public export
 > %default total
+> %hide Prelude.Stream.(::)
 
 > ||| Single step reduction or One-step reduction
 > data Step : {b: Type} -> Comb b -> Comb b -> Type where
@@ -58,6 +61,7 @@ We use the Multi Relation to define it as Multi Step
 > eqSteps (MultiStep s m) =
 >   let indHyp = eqSteps m
 >   in trans (eqStep s) indHyp
+
 
 == Computational reduction
 

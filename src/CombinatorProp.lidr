@@ -16,21 +16,33 @@
 === Equality
 TODO: Change to maybe, no algorithm to decide equality
 
-> ||| DecEq instance for weak equality
-> ||| Base this on eqStep, when similarity of whr and Steps is established
-> implementation (StructEq b, StructEq (Comb b), Reduce b) => DecEq (Comb b) where
->   decEq l r =
+> -- Weak equal is a Maybe type and not decidable as:
+> --
+> --  - we have no algorithm to decide weak equality for all cases
+> --  - even stronger: weak equality is general undecidable
+>
+> -- Correct is weakEq l r -> l = r, but Not (weakEq) -> Not (l = r) is not true
+> interface WeakEq t where
+>   ||| Decide whether two terms of `base` are weak equal
+>   total weakEq : (x1, x2 : t) -> Maybe (x1 = x2)
+
+
+> ||| WeakEq instance
+> ||| TODO: Base this on eqStep, when similarity of whr and Steps is established
+> ||| so that we can live with one beleive_me
+> implementation (DecEq b, StructEq (Comb b), Reduce b) => WeakEq (Comb b) where
+>   weakEq l r =
 >     case structEq l r of
->       Just p =>  Yes $ p
+>       Just p =>  Just p
 >       Nothing =>
 >         let ln = whr l
 >             rn = whr r
 >         in  case (ln, rn) of
 >               (Just ln', Just rn') =>
 >                 case structEq ln' rn' of
->                   Just p =>   Yes $ believe_me p
->                   Nothing =>  No $ believe_me ()
->               _ =>  No $ believe_me ()
+>                   Just p =>   Just $ believe_me p
+>                   Nothing =>  Nothing
+>               _ =>  Nothing
 
 === Normal form
 
@@ -85,7 +97,6 @@ TODO: Change to maybe, no algorithm to decide equality
 >           Prim StepK impossible
 >           AppL s impossible
 >           AppR s impossible
-
 
 > ||| Weak reduction confluent
 > whr_confluent : confluent (Multi Step)

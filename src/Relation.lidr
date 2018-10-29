@@ -16,8 +16,8 @@ pairs of elements of [X].  *)
 >   MultiRefl  : {X: Type} -> {R: Relation X} -> {x : X} ->  Multi R x x
 >   MultiStep  : {X: Type} -> {R: Relation X} -> {x, y, z : X} -> R x y -> Multi R y z -> Multi R x z
 
-> multiR : {X: Type} -> {R: Relation X} -> (x,y: X) -> R x y -> (Multi R) x y
-> multiR x y h = MultiStep h (MultiRefl)
+> liftMulti : {X: Type} -> {R: Relation X} -> {x,y: X} -> R x y -> (Multi R) x y
+> liftMulti r = MultiStep r (MultiRefl)
 
 > multiTrans: {X:Type} -> {R: Relation X} -> {x, y, z : X} ->
 >   Multi R x y  -> Multi R y z -> Multi R x z
@@ -58,23 +58,21 @@ pairs of elements of [X].  *)
 >     MultiStep st1 {y=y1'} ms1 =>
 >       case m2 of
 >         MultiRefl => (y1 ** (MultiRefl,m1))
-
--- >           -- case is redundant
--- >         MultiStep st2 MultiRefl =>
--- >           let (z1 ** (hl1,hr1)) = hyp x y1' y2 st1 st2
--- >               (zo ** (hlo,hro)) = confluenceToMulti {r} hyp y1' y1 z1
--- >                   ms1 (assert_smaller m2 (MultiStep hl1 MultiRefl))
--- >           in (zo ** (hlo,multiTrans (MultiStep hr1 MultiRefl) hro))
-
+>       -- case is redundant
+>       --  MultiStep st2 MultiRefl =>
+>       --    let (z1 ** (hl1,hr1)) = hyp x y1' y2 st1 st2
+>       --        (zo ** (hlo,hro)) = confluenceToMulti {r} hyp y1' y1 z1
+>       --            ms1 (assert_smaller m2 (MultiStep hl1 MultiRefl))
+>       --    in (zo ** (hlo,multiTrans (MultiStep hr1 MultiRefl) hro))
 >         MultiStep st2 {y=y2'} ms2 =>
 >           let (z1 ** (hl1,hr1)) = hyp x y1' y2' st1 st2
 >               (zo ** (hlo,hro)) = confluenceToMulti {r} hyp y1' y1 z1
->                   ms1 (assert_smaller m2 (MultiStep hl1 MultiRefl))
->               (zu ** (hlu,hru)) = confluenceToMulti {r} hyp y2' y2 z1
->                   ms2 (assert_smaller m2 (MultiStep hr1 MultiRefl))
+>                   ms1  (assert_smaller m2 (liftMulti hl1))
+>               (zu ** (hlu,hru)) = confluenceToMulti {r} hyp y2' z1 y2
+>                   (liftMulti hr1) (assert_smaller m2 ms2)
 >               (z **  (hlf,hrf)) = confluenceToMulti {r} hyp z1 zo zu
->                   hro (assert_smaller m2 hru) -- how to justify this assert_smaller?
->           in (z ** (multiTrans hlo hlf,multiTrans hlu hrf))
+>                   hro (assert_smaller m2 hlu) -- how to justify this assert_smaller?
+>           in (z ** (multiTrans hlo hlf,multiTrans hru hrf))
 
 > -- Doesn't really belong here
 
