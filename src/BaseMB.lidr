@@ -15,8 +15,8 @@ A base with M and B
 >   M : MB
 >   B : MB
 
-> syntax ":M" = PrimComb M;
-> syntax ":B" = PrimComb B;
+> syntax ":M" = PrimComb M 1;
+> syntax ":B" = PrimComb B 3;
 
 > data PrimStep : Comb MB -> Comb MB -> Type where
 >   StepM   : {x: Comb MB} -> Reduce MB => PrimStep (:M # x) (x # x)
@@ -41,8 +41,8 @@ A base with M and B
 >   show B = ":B"
 
 > implementation Reduce MB where
->   reduceStep (App (PrimComb M) x) = Just (x # x)
->   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
+>   reduceStep (App (PrimComb M _) x) = Just (x # x)
+>   reduceStep (App (App (App (PrimComb B _) x) y) z) = Just (x # (y # z))
 >   reduceStep _ = Nothing
 >   PrimRed = PrimStep
 

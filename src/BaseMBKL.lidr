@@ -18,10 +18,10 @@ A base with M, B, K and L
 >   K : MBKL
 >   L : MBKL
 
-> syntax ":M" = PrimComb M;
-> syntax ":B" = PrimComb B;
-> syntax ":K" = PrimComb K;
-> syntax ":L" = PrimComb L;
+> syntax ":M" = PrimComb M 1;
+> syntax ":B" = PrimComb B 3;
+> syntax ":K" = PrimComb K 2;
+> syntax ":L" = PrimComb L 2;
 
 > data PrimStep : Comb MBKL -> Comb MBKL -> Type where
 >   StepM   : {x : Comb MBKL} -> Reduce MBKL => PrimStep (:M # x) (x # x)
@@ -79,10 +79,10 @@ A base with M, B, K and L
 >   show L = ":L"
 
 > implementation Reduce MBKL where
->   reduceStep (App (PrimComb M) x) = Just (x # x)
->   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
->   reduceStep (App (App (PrimComb K) x) y) = Just x
->   reduceStep (App (App (PrimComb L) x) y) = Just (x # (y # y))
+>   reduceStep (App (PrimComb M _) x) = Just (x # x)
+>   reduceStep (App (App (App (PrimComb B _) x) y) z) = Just (x # (y # z))
+>   reduceStep (App (App (PrimComb K _) x) y) = Just x
+>   reduceStep (App (App (PrimComb L _) x) y) = Just (x # (y # y))
 >   reduceStep _ = Nothing
 >   PrimRed = PrimStep
 

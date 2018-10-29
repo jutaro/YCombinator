@@ -69,7 +69,7 @@ We use the Multi Relation to define it as Multi Step
 > ||| Return Just the new combinator if possible, or Nothing if the head is not a redex,
 > ||| which is the same as to say the term is in weak head normal form
 > stepHead : Reduce b => Comb b -> Maybe (Comb b)
-> stepHead (PrimComb i)       = Nothing
+> stepHead (PrimComb i n)     = Nothing
 > stepHead (Var n)            = Nothing
 > stepHead a@(App head redex) =
 >   case reduceStep a of
@@ -84,7 +84,7 @@ We use the Multi Relation to define it as Multi Step
 > ||| Return just the new combinator if possible, or Nothing if the head is not a redex
 > ||| which is the same as to say the term is in weak normal form
 > step : Reduce b => Comb b -> Maybe (Comb b)
-> step (PrimComb i)       = Nothing
+> step (PrimComb i n)     = Nothing
 > step (Var n)            = Nothing
 > step a@(App head redex) =
 >   case reduceStep a of

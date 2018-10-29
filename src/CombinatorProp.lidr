@@ -11,7 +11,6 @@
 
 > %access public export
 > %default total
-> %hide Prelude.Nat.S
 
 === Equality
 TODO: Change to maybe, no algorithm to decide equality
@@ -25,7 +24,6 @@ TODO: Change to maybe, no algorithm to decide equality
 > interface WeakEq t where
 >   ||| Decide whether two terms of `base` are weak equal
 >   total weakEq : (x1, x2 : t) -> Maybe (x1 = x2)
-
 
 > ||| WeakEq instance
 > ||| TODO: Base this on eqStep, when similarity of whr and Steps is established
@@ -48,15 +46,15 @@ TODO: Change to maybe, no algorithm to decide equality
 
 > ||| Show that (K S S) is not in normal form
 > notNormalKSS : Not (normalForm (Step {b = KS}) (:K # :S # :S))
-> notNormalKSS hyp = hyp (:S ** (Prim StepK))
+> notNormalKSS hyp = hyp (:S ** Prim StepK)
 
 > ||| Show that (K S) is in normal form
 > normalKS : normalForm (Step {b = KS}) (:K # :S)
 > normalKS = forallToExistence (\t, h => case eqStep h of
 >                                           hyp => normalKS' t h hyp)
 >   where normalKS': (b : Comb KS) -> Step (:K # :S) b -> (:K # :S) = b -> Void
->         normalKS' (:K) step Refl impossible
->         normalKS' (:S) step Refl impossible
+>         normalKS' (PrimComb K _) step Refl impossible
+>         normalKS' (PrimComb BaseKS.S _) step Refl impossible
 >         normalKS' (Var _) step Refl impossible
 >         normalKS' (App l r) step hyp =
 >           case step of
@@ -82,7 +80,6 @@ TODO: Change to maybe, no algorithm to decide equality
 >             (AppL (AppR (Prim StepK))) of
 >     Refl impossible
 
-
 === Confluence
 
 > stepNotConfluent : Not (confluent (Step {b = KS}))
@@ -90,7 +87,7 @@ TODO: Change to maybe, no algorithm to decide equality
 >   let (z ** (lh,rh)) = hyp (:K # :S # (:K # :S # :K)) (:S) (:K # :S # :S) stepK (AppR stepK)
 >   in  lemma1 z lh
 >     where
->       lemma1 : (z: Comb KS) -> Not (Step (PrimComb S) z)
+>       lemma1 : (z: Comb KS) -> Not (Step :S z)
 >       lemma1 z hyp =
 >         case hyp of
 >           Prim StepS impossible

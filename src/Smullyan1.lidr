@@ -82,7 +82,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > fixation x z = (z ** id)
 
 11 A fact about K
->  -- TODO !!!
+-- TODO !!!
 
 -- > kEgocentricHopeless: (x: Comb MBKL) -> :K # :K = :K -> :K # x = :K
 -- > kEgocentricHopeless x hyp =

@@ -14,7 +14,7 @@
 > -- ||| a term can be a a primitive combinator or an application
 > -- ||| or a variable. Variables are just placeholders and no substitution will be defined
 >   data Comb : (base: Type) -> Type where
->     PrimComb : Reduce base => base -> Comb base
+>     PrimComb : Reduce base => base -> Nat -> Comb base
 >     App : {base: Type} -> Comb base -> Comb base -> Comb base
 >     Var : String -> Comb base
 >
@@ -35,13 +35,13 @@
 > combinatorExtensionality _ Refl = Refl
 
 > implementation Eq base => Eq (Comb base) where
->   (PrimComb a) == (PrimComb b) = a == b
+>   (PrimComb _ a) == (PrimComb _ b) = a == b
 >   (App a b)    == (App c d)    = a == c && b == d
 >   (Var n1)     == (Var n2)     = n1 == n2
 >   _            == _            = False
 
 > implementation Show base => Show (Comb base) where
->   showPrec d (PrimComb c) = show c
+>   showPrec d (PrimComb _ c) = show c
 >   showPrec d (Var n)   = show n
 >   showPrec d (App a b) = showParens (d > Open) (showPrec Open a ++ " # " ++ showPrec App b)
 
@@ -57,10 +57,10 @@
 > appInjective : {a, b, c, d : Comb base}  -> App a b = App c d -> (a = c, b = d)
 > appInjective Refl = (Refl,Refl)
 
-> primNotApp : {a : base} -> (Reduce base) => PrimComb a = App _ _ -> Void
+> primNotApp : {a : base} -> (Reduce base) => PrimComb a _ = App _ _ -> Void
 > primNotApp Refl impossible
 
-> varNotPrim : {a : base} -> (Reduce base) => Var n = PrimComb a -> Void
+> varNotPrim : {a : base} -> (Reduce base) => Var n = PrimComb a _ -> Void
 > varNotPrim Refl impossible
 
 > varNotApp : Var n = App _ _ -> Void
@@ -76,9 +76,9 @@ Using here a new interface to use DecEq for "reductional" equality
 >   total structEq : (x1, x2 : t) -> Maybe (x1 = x2)
 
 > implementation (DecEq base) => StructEq (Comb base) where
->   structEq (PrimComb a) (PrimComb b) with (decEq a b)
->     | Yes prf  = Just $ cong prf
->     | No contra  = Nothing
+>   structEq (PrimComb a n) (PrimComb b m) with (decEq a b,decEq n m)
+>     | (Yes prf1,Yes prf2)  = Just $ rewrite prf1 in cong prf2
+>     | _  = Nothing
 >   structEq (App a b) (App c d) with (structEq a c)
 >     structEq (App a b) (App c d) | Just p with (structEq b d)
 >       structEq (App a b) (App c d) | Just p | Just p' = Just $ appCongruent p p'
@@ -87,12 +87,12 @@ Using here a new interface to use DecEq for "reductional" equality
 >   structEq (Var n1) (Var n2) with (decEq n1 n2)
 >     | Yes p = Just $ cong p
 >     | No contra = Nothing
->   structEq (PrimComb c) (App l r) = Nothing
->   structEq (App l r) (PrimComb c) = Nothing
->   structEq (Var n) (PrimComb c)   = Nothing
->   structEq (PrimComb c) (Var n)   = Nothing
->   structEq (Var n) (App l r)      = Nothing
->   structEq (App l r) (Var n)      = Nothing
+>   structEq (PrimComb c _) (App l r) = Nothing
+>   structEq (App l r) (PrimComb c _) = Nothing
+>   structEq (Var n) (PrimComb c _)   = Nothing
+>   structEq (PrimComb c _) (Var n)   = Nothing
+>   structEq (Var n) (App l r)        = Nothing
+>   structEq (App l r) (Var n)        = Nothing
 
 Subterms
 
@@ -157,15 +157,15 @@ Subterms
 > mutual
 >   subtermImpossibleR : Not (Subterm (App a b) b)
 >   subtermImpossibleR SubtermEq impossible
->   subtermImpossibleR {b=PrimComb _} (SubtermAppL _) impossible
->   subtermImpossibleR {b=PrimComb _} (SubtermAppR _) impossible
+>   subtermImpossibleR {b=PrimComb _ _} (SubtermAppL _) impossible
+>   subtermImpossibleR {b=PrimComb _ _} (SubtermAppR _) impossible
 >   subtermImpossibleR {b=App _ _} (SubtermAppL s) = subtermImpossibleL $ subtermInAppR s
 >   subtermImpossibleR {b=App _ _} (SubtermAppR s) = subtermImpossibleR $ subtermInAppR s
 
 >   subtermImpossibleL : Not (Subterm (App a b) a)
 >   subtermImpossibleL SubtermEq impossible
->   subtermImpossibleL {a=PrimComb _} (SubtermAppL _) impossible
->   subtermImpossibleL {a=PrimComb _} (SubtermAppR _) impossible
+>   subtermImpossibleL {a=PrimComb _ _} (SubtermAppL _) impossible
+>   subtermImpossibleL {a=PrimComb _ _} (SubtermAppR _) impossible
 >   subtermImpossibleL {a=App _ _} (SubtermAppL s) = subtermImpossibleL $ subtermInAppL s
 >   subtermImpossibleL {a=App _ _} (SubtermAppR s) = subtermImpossibleR $ subtermInAppL s
 

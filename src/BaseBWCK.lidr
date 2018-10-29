@@ -18,10 +18,10 @@ A base with combinators B, W, C and K
 >   C : BWCK
 >   K : BWCK
 
-> syntax ":B" = PrimComb B;
-> syntax ":W" = PrimComb W;
-> syntax ":C" = PrimComb C;
-> syntax ":K" = PrimComb K;
+> syntax ":B" = PrimComb B 3;
+> syntax ":W" = PrimComb W 2;
+> syntax ":C" = PrimComb C 3;
+> syntax ":K" = PrimComb K 2;
 
 > data PrimStep : Comb BWCK -> Comb BWCK -> Type where
 >   StepB   : {x, y, z: Comb BWCK} -> Reduce BWCK => PrimStep (:B # x # y # z) (x # (y # z))
@@ -83,10 +83,10 @@ A base with combinators B, W, C and K
 >   show K = ":K"
 
 > implementation Reduce BWCK where
->   reduceStep (App (App (App (PrimComb B) x) y) z) = Just (x # (y # z))
->   reduceStep (App (App (PrimComb W) x) y) = Just (x # y # y)
->   reduceStep (App (App (App (PrimComb C) x) y) z) = Just (x # z # y)
->   reduceStep (App (App (PrimComb K) x) y) = Just x
+>   reduceStep (App (App (App (PrimComb B _) x) y) z) = Just (x # (y # z))
+>   reduceStep (App (App (PrimComb W _) x) y) = Just (x # y # y)
+>   reduceStep (App (App (App (PrimComb C _) x) y) z) = Just (x # z # y)
+>   reduceStep (App (App (PrimComb K _) x) y) = Just x
 >   reduceStep _ = Nothing
 >   PrimRed = PrimStep
 

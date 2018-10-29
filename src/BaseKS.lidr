@@ -15,8 +15,8 @@ A basic combinator base
 >   K : KS
 >   S : KS
 
-> syntax ":K" = PrimComb K;
-> syntax ":S" = PrimComb S;
+> syntax ":K" = PrimComb K 2;
+> syntax ":S" = PrimComb S 3;
 
 > implementation Eq KS where
 >   K == K = True
@@ -41,8 +41,8 @@ A basic combinator base
 >   StepS   :  {x, y, z: Comb KS} -> Reduce KS => PrimStep (:S # x # y # z) ((x # z) # (y # z))
 
 > implementation Reduce KS where
->   reduceStep (App (App (PrimComb K) x) y) = Just x
->   reduceStep (App (App (App (PrimComb S) x) y) z) = Just ((x # z) # (y # z))
+>   reduceStep (App (App (PrimComb K _) x) y) = Just x
+>   reduceStep (App (App (App (PrimComb S _) x) y) z) = Just ((x # z) # (y # z))
 >   reduceStep _ = Nothing
 >   PrimRed = PrimStep
 

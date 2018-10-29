@@ -25,13 +25,12 @@
 >
 
 > data Path : Comb b -> Comb b -> Nat -> Type where
->   LP  : Path t (App l r) n -> Path t l (S n)
->   RP  : Path t (App l r) n -> Path t r 0
->   Top : Path t t 0
+>   LP  : Reduce b => {t,l,r: Comb b} -> Path t (App l r) n -> Path t l (S n)
+>   RP  : Reduce b => {t,l,r: Comb b} -> Path t (App l r) n -> Path t r 0
+>   Top : Reduce b => {t: Comb b} -> Path t t 0
 
-> data Redex : Comb b -> Type where
->   Here : Path t1 t2 n -> Redex t
-
+> data Redex : Reduce b => Comb b -> Type where
+>   Here : Reduce b => {t: Comb b} -> Path t (PrimComb c m) n -> {auto prf: LT m n} -> Redex t
 
 > excomb : Comb KS
 > excomb = :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z") # Var "z"
@@ -39,7 +38,7 @@
 > path1 : Path ParReduction.excomb :S 3
 > path1 = LP (LP (LP Top))
 
-> NonOverlapping : {b: Type} -> (t: Comb b) -> List (Redex t) -> Type
+> NonOverlapping : Reduce b => (t: Comb b) -> List (Redex t) -> Type
 
-> ParStep : {b: Type} -> Comb b -> Comb b -> Type
+> ParStep : Reduce b => Comb b -> Comb b -> Type
 > ParStep f t = (r: List (Redex t)) -> NonOverlapping t r
