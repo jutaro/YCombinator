@@ -23,22 +23,29 @@
 >   Here : Reduce b => {h : Comb b}  -> Path h
 
 > ||| Find Combinator at path
-> combAtPath : {b: Type} -> Reduce b => {combType : Comb b} -> Path combType -> Comb b
+> combAtPath : Reduce b => {combType : Comb b} -> Path combType -> Comb b
 > combAtPath (LP p) = combAtPath p
 > combAtPath (RP p) = combAtPath p
 > combAtPath {combType} Here = combType
 
-> ||| Shorten a path
-> shortenPath : {b: Type} -> Reduce b => {combType : Comb b} -> Path combType -> Path combType
+> ||| Shorten a path at the end
+> shortenPath : Reduce b => {combType : Comb b} -> Path combType -> Path combType
 > shortenPath Here = Here
 > shortenPath (LP Here) = Here
 > shortenPath (LP other) = LP (shortenPath other)
 > shortenPath (RP Here) = Here
 > shortenPath (RP other) = RP (shortenPath other)
 
-> shortenN: {b: Type} -> Reduce b => {combType : Comb b} -> Nat -> Path combType -> Path combType
+> ||| Shorten a path for n elements at the end
+> shortenN: Reduce b => {combType : Comb b} -> Nat -> Path combType -> Path combType
 > shortenN Z p = p
 > shortenN (S n) p = shortenN n (shortenPath p)
+
+> ||| Return local spine length above path
+> arity : Reduce b  => {combType: Comb b} -> {default 0 nn : Nat} -> Path combType -> Nat
+> arity {nn} (LP next) = arity {nn=(S nn)} next
+> arity {nn} (RP next) = arity {nn=0} next
+> arity {nn} Here = nn
 
 > ||| Untyped version of path
 > data PathU : Type where
@@ -68,20 +75,15 @@
 > asUntypedPath (RP c) = RP' (asUntypedPath c)
 > asUntypedPath Here   = Here'
 
-
 === Redex
-
-> ||| Return local spine length above path
-> arity : Reduce b  => {combType: Comb b} -> {default 0 nn : Nat} -> Path combType -> Nat
-> arity {nn} (LP next) = arity {nn=(S nn)} next
-> arity {nn} (RP next) = arity {nn=0} next
-> arity {nn} Here = nn
 
 > data Redex : Comb b -> Type where
 >    RPath :  Reduce b =>
 >               {t, t1,t2: Comb b} ->
+>               {n: Nat} ->
 >               PrimRed t1 t2 ->
 >               (p : Path t) ->
+>               {auto prf: combAtPath p = PrimComb _ n} ->
 >               {auto prf1: LTE n (arity p)} ->
 >               {auto prf2: combAtPath (shortenN (arity p) p) = t1} ->
 >               Redex t
@@ -107,15 +109,9 @@
 
 >   RPath : Reduce base => {t: Comb base} -> (p : Path (PrimComb base n) t) -> {auto prf: LTE n (arity 0 p)} -> Redex t
 
-
 > transformType : {t,t2,t3: Comb base} -> (p : Path (PrimComb base n) t) -> (t2->t3)
 
-
-
-
-
 > applyRedex : (co: Comb KS) -> Redex (co -> co2) -> Step co co2
-
 
 > applyRedex : (co: Comb KS) -> (co2: Comb KS) -> Redex co -> Step {b = KS} co co2
 > applyRedex (App (App :K a) b) a (RPath (LP (LP Here))) = stepK {x=a} {y=b}
@@ -123,11 +119,8 @@
 > applyRedex (App l1 r) (App l2 r) (RPath (LP p)) = AppL (applyRedex l1 l2 (RPath p))
 > applyRedex (App l r1) (App l r2) (RPath (RP p)) = AppR (applyRedex r1 r2 (RPath p))
 
-
-
 > -- applyRedex (Here (LP _)) = AppL applyRedex ps s)
 > -- applyRedex (Here (RP _)) = applyRedex (AppR ps s)
-
 
 > -- ||| Apply redexes consecutively in reverse pre order
 > -- TODO: What does non overlapping mean?
@@ -148,7 +141,7 @@
 > excomb = :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z") # Var "z"
 
 > rcomb : Comb KS
-> rcomb = :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z") # Var "z"
+> rcomb = Var "x" # Var "z" # (Var "y" # Var "z") # Var "z" # (Var "x" # Var "z" # (Var "y" # Var "z") # Var "z")
 
 > path1 : Path ParReduction.excomb
 > path1 = LP (LP (LP Here))
