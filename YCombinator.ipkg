@@ -1,11 +1,13 @@
 package YCombinator
 
-modules    = Combinator,
+modules    = Other,
+             Combinator,
              Relation,
              Reduction,
              RevReduction,
              Path,
 --             SimReduction,
+             SimReductionComp,
              BaseKS,
              BaseMB,
              BaseMBKL,

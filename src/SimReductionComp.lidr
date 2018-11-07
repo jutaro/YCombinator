@@ -14,7 +14,7 @@
 > ||| Take a step in computational reduction on the first possible redex starting from the head.
 > ||| Return just the new combinator if possible, or Nothing if the head is not a redex
 > ||| which is the same as to say the term is in weak normal form
-> stepSim : Reduce b => {b: Type} -> {default Z n: Nat} -> Comb b -> (Nat, Comb b)
+> stepSim : {b: Type} -> Reduce b => {default Z n: Nat} -> Comb b -> (Nat, Comb b)
 > stepSim {n} i@(PrimComb _ _)   = (n,i)
 > stepSim {n} i@(Var _)          = (n,i)
 > stepSim {n} i@(App left right) =

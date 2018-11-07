@@ -8,6 +8,7 @@
 > import Relation
 > import Reduction
 > import BaseKS
+> import Other
 
 > %access public export
 > %default total

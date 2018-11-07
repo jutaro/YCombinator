@@ -2,8 +2,7 @@
 
 > module BinaryTree
 
-> import Data.Bits
-> import Debug.Trace
+> import Other
 
 > %access public export
 > %default total
@@ -25,18 +24,9 @@
 
 === Generation
 
-We map binary tree2 to numbers following an idea from Luther Tychonievich.
-A binary tree is either empty, or it has two binary trees as chil­dren. Fol­low­ing is a technique for mapping non-neg­a­tive inte­gers to binary trees in an efficient mann­er.
+We map binary trees to non-neg­a­tive inte­ger following an idea from Luther Tychonievich.
 
-To de-interleave a number I write it in binary and cre­ate two numbers from it, one using the odd bits and the other the even bits. For exam­ple, to de-interleave 71 I’d write it in binary as 1000111 then I’d take the odd bits 1000111 to make 1011, which is 11, and the even bits 1000111 to make 001, which is 1; thus 71 becomes (11, 1).
-
-> infixl 7 .&.
-> (.&.) : Int -> Int -> Int
-> (.&.) = prim__andInt
-
-> infixl 5 .|.
-> (.|.) : Int -> Int -> Int
-> (.|.) = prim__orInt
+Zero is a Leaf and 1 a node. To represent another number write it binary and cre­ate two numbers from it, one using the odd bits and the other the even bits. For exam­ple, to de-interleave 71 I’d write it in binary as 1000111 then I’d take the odd bits 1000111 to make 1011, which is 11, and the even bits 1000111 to make 001, which is 1; thus 71 becomes (11, 1).
 
 > splitnum : Int -> (Int,Int)
 > splitnum num = splitnum' 0 0 1 num
