@@ -14,7 +14,7 @@
 
 > ||| Single step reduction or One-step reduction
 > data Step : {b: Type} -> Comb b -> Comb b -> Type where
->   Prim    : {l, r: Comb b} -> Reduce b => PrimRed l r -> Step l r
+>   Prim    : {l, r: Comb b} -> Reduce b => PrimRed {base=b} l r -> Step {b} l r
 >   AppL    : Step l res -> Step (l # r) (res # r)
 >   AppR    : Step r res -> Step (l # r) (l # res)
 
@@ -30,7 +30,7 @@ We use the Multi Relation to define it as Multi Step
 > (->-) {c3} a b = MultiStep {z=c3} a (MultiStep b MultiRefl)
 
 > infixr 6 +>+
-> (+>+) : {c1,c2,c3: Comb base} -> Multi Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
+> (+>+) : {c1,c2,c3: Comb b} -> Multi Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
 > (+>+) a MultiRefl = a
 > (+>+) MultiRefl b = b
 > (+>+) (MultiStep a MultiRefl) msr = (MultiStep a msr)
@@ -52,11 +52,11 @@ We use the Multi Relation to define it as Multi Step
 
 > ||| Terms are defined as equal if they are in a step relation
 > ||| We should only need this one believe me!
-> eqStep : {base: Type} -> {a,b : Comb base} -> Step a b -> a = b
+> eqStep : {b: Type} -> {a,b : Comb b} -> Step a b -> a = b
 > eqStep step = believe_me step
 
 > ||| Defining this equality transitiv for mutiple steps gives weak equality
-> eqSteps : {base: Type} -> {a,b : Comb base} -> Multi Step a b -> a = b
+> eqSteps : {b: Type} -> {a,b : Comb b} -> Multi Step a b -> a = b
 > eqSteps MultiRefl = Refl
 > eqSteps (MultiStep s m) =
 >   let indHyp = eqSteps m

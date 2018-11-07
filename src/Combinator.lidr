@@ -23,7 +23,7 @@
 >     ||| computational reduction
 >     reduceStep : Comb base -> Maybe (Comb base)
 >     ||| type level reduction
->     PrimRed    : Comb base -> Comb base -> Type
+>     PrimRed    : {base : Type} -> Comb base -> Comb base -> Type
 
 > infixl 9 #
 > -- ||| Application operator

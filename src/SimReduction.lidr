@@ -1,6 +1,6 @@
 = Simultaneously Reduction : Simultaneously reduction
 
-> module ParReduction
+> module SimReduction
 
 > import Decidable.Equality
 > import Relation
@@ -8,75 +8,28 @@
 > import CombinatorCompProp
 > import Reduction
 > import BaseKS
+> import Path
 > import Data.List.Quantifiers
-
 
 > %access public export
 > %default total
 
-=== Path
-
-> ||| Type gives type of combinator
-> data Path : Comb b -> Type where
->   LP  : Reduce b  => {l,r: Comb b} -> Path l -> Path (App l r)
->   RP  : Reduce b  => {l,r: Comb b} -> Path r -> Path (App l r)
->   Here : Reduce b => {h : Comb b}  -> Path h
-
-> ||| Find Combinator at path
-> combAtPath : Reduce b => {combType : Comb b} -> Path combType -> Comb b
-> combAtPath (LP p) = combAtPath p
-> combAtPath (RP p) = combAtPath p
-> combAtPath {combType} Here = combType
-
-> ||| Shorten a path at the end
-> shortenPath : Reduce b => {combType : Comb b} -> Path combType -> Path combType
-> shortenPath Here = Here
-> shortenPath (LP Here) = Here
-> shortenPath (LP other) = LP (shortenPath other)
-> shortenPath (RP Here) = Here
-> shortenPath (RP other) = RP (shortenPath other)
-
-> ||| Shorten a path for n elements at the end
-> shortenN: Reduce b => {combType : Comb b} -> Nat -> Path combType -> Path combType
-> shortenN Z p = p
-> shortenN (S n) p = shortenN n (shortenPath p)
-
-> ||| Return local spine length above path
-> arity : Reduce b  => {combType: Comb b} -> {default 0 nn : Nat} -> Path combType -> Nat
-> arity {nn} (LP next) = arity {nn=(S nn)} next
-> arity {nn} (RP next) = arity {nn=0} next
-> arity {nn} Here = nn
-
-> ||| Untyped version of path
-> data PathU : Type where
->   LP'  : PathU -> PathU
->   RP'  : PathU -> PathU
->   Here' : PathU
-
-> implementation Eq PathU where
->   (LP' r) == (LP' r2) = r == r2
->   (RP' m) == (RP' m2) = m == m2
->   Here'   == Here'    = True
->   _       == _        = False
-
-> ||| Pre-order traversal ordering for path
-> implementation Ord PathU where
->   compare (LP' _) (RP' _) = LT
->   compare (LP' l1) (LP' l2) = compare l1 l2
->   compare (LP' _) Here' = GT
->   compare (RP' _) (LP' _) = GT
->   compare (RP' r1) (RP' r2) = compare r1 r2
->   compare (RP' _) Here' = GT
->   compare Here' Here' = EQ
->   compare Here' _ = LT
-
-> asUntypedPath : Path c1 -> PathU
-> asUntypedPath (LP c) = LP' (asUntypedPath c)
-> asUntypedPath (RP c) = RP' (asUntypedPath c)
-> asUntypedPath Here   = Here'
-
 === Redex
 
+> {-}
+> ||| A redex for simultaneus reduction
+> ||| Variant1, which duplicates a term and adds a path
+> data Redex : {b: Type} -> (from: Comb b) -> Path from -> (to: Comb b) -> Type where
+>   RPrim    : {l, r: Comb b} -> Reduce b => PrimRed {base=b} l r -> Redex l Here r
+>   RAppL    : Reduce b => Redex {b} l path res -> Redex {b} (l # r) (LP path) (res # r)
+>   RAppR    : Reduce b => Redex {b} r path res -> Redex {b} (l # r) (RP path) (l # res)
+
+> ||| Variant2
+> ||| A Redex is a primitive reduction and a path, on which it is applied.
+> ||| It contains the proofs, that
+> ||| * A primitive combinator is at the path
+> ||| * The left spine before this prim is at least as long as the arity
+> ||| * The combinator at the path fits the PrimComb given
 > data Redex : Comb b -> Type where
 >    RPath :  Reduce b =>
 >               {t, t1,t2: Comb b} ->
@@ -88,11 +41,62 @@
 >               {auto prf2: combAtPath (shortenN (arity p) p) = t1} ->
 >               Redex t
 
-> implementation Eq (Redex t) where
->   (RPath pr1 p1) == (RPath pr2 p2) = asUntypedPath p1 == asUntypedPath p2
 
-> implementation Ord (Redex t) where
->   compare (RPath pr1 p1) (RPath pr2 p2) = compare (asUntypedPath p1) (asUntypedPath p2)
+> ||| Change type of (redex) path p from in to out type of a redex
+> pathToType : {b: Type} -> (u : Comb b) -> {w : Comb b} -> Redex u p w -> Path w
+> pathToType _ (RPrim p) = Here
+> pathToType {b} (App l r) (RAppL rl)  = LP (pathToType {b} l rl)
+> pathToType {b} (App l r) (RAppR rr)  = RP (pathToType {b} r rr)
+
+> ||| Redexes can be combined
+> simRedex   : {b: Type} -> {u,v,w: Comb b} -> {p1, p2: Path u} ->
+>                 Redex {b} u p1 v -> Redex {b} u p2 w -> p1 < p2 = True -> Redex v p' b'
+> simRedex {b} {u} redex1 redex2 lt =
+>   let p' = pathToType {b} u redex1
+>   in ?hole
+
+
+
+
+--
+-- > implementation Eq (Redex t) where
+-- >   (RPath pr1 p1) == (RPath pr2 p2) = asUntypedPath p1 == asUntypedPath p2
+--
+-- > ||| This instance makes it possible to sort redexes in pre-order traversal ordering
+-- > implementation Ord (Redex t) where
+-- >   compare (RPath pr1 p1) (RPath pr2 p2) = compare (asUntypedPath p1) (asUntypedPath p2)
+--
+-- > applyRedex : Reduce b  => (t: Comb b) -> (v: Comb b) -> Redex t -> Step t v
+-- > applyRedex c v (RPath prim path {prf2}) =
+-- >   let applyPath = shortenN (arity path) path
+-- >   in applyRedex' prim c v applyPath
+-- >     where
+-- >       applyRedex : Reduce b  => PrimRed {base=b} t1 t2 -> (t' : Comb b) -> (v': Comb b) -> Path t' -> Step t' v'
+-- >       applyRedex' p (App l r) (App l' r) (LP np)  = AppL (applyRedex' p l l' np)
+-- >       applyRedex' p (App l r) (App l r') (RP np)  = AppR (applyRedex' p r r' np)
+-- >       applyRedex' p from to SimReduction.Here     =
+-- >         let temp = replace (sym prf2) p
+-- >         in  Prim ?hole
+--
+
+-- > transformType : Reduce b => {t : Comb b} -> Redex t -> Comb b -> Comb b
+-- > transformType (RPath pr (LP np)) t =
+-- >   case t of
+-- >     App l r => ?hole0 -- App (transformType (RPath pr np) l) r
+-- > transformType (RPath pr (RP np)) t =
+-- >   case t of
+-- >     App l r => ?hole1 -- App l (transformType (RPath pr np) r)
+-- > transformType (RPath (Prim p (S(Z))) Here) (App prc r) =
+-- >   case p {x=r} of
+-- >     Step l r => r
+-- > transformType (RPath (PrimComb p 2) Here) (App (App prc r) r1) = p {x=r} {y=r1}
+-- > transformType (RPath (PrimComb p 3) Here) (App (App (App prc r) r1) r2) = p {x=r} {y=r1} {z=r2}
+
+
+simStep {t=SimReduction.excomb} {tr=SimReduction.rescomb} [redex1, redex2,redex3]
+
+applyRedex
+
 
 > {--
 > applyRedex : Reduce b => Redex t -> Step t1 t2
@@ -137,48 +141,11 @@
 
 ==== Test cases
 
-> excomb : Comb KS
-> excomb = :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z") # Var "z"
-
-> rcomb : Comb KS
-> rcomb = Var "x" # Var "z" # (Var "y" # Var "z") # Var "z" # (Var "x" # Var "z" # (Var "y" # Var "z") # Var "z")
-
-> path1 : Path ParReduction.excomb
-> path1 = LP (LP (LP Here))
-
-> redex1 : Redex ParReduction.excomb
-> redex1 = RPath StepS path1
-
-> path2 : Path  ParReduction.excomb
-> path2 = LP (LP (RP (LP (LP (LP Here)))))
-
-> redex2 : Redex ParReduction.excomb
-> redex2 = RPath StepS path2
-
-> path3 : Path  ParReduction.excomb
-> path3 = LP (RP (LP (LP (LP Here))))
-
-> redex3 : Redex ParReduction.excomb
-> redex3 = RPath StepS path3
-
-> test1 : combAtPath ParReduction.path1 = PrimComb BaseKS.S 3
-> test1 = Refl
-
-> test2 : combAtPath (shortenPath ParReduction.path1) = :S # (:S # Var "x" # Var "y" # Var "z")
-> test2 = Refl
-
-> test3 : combAtPath (shortenPath (shortenPath ParReduction.path1)) =
->                         :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z")
-> test3 = Refl
-
-> test4 : combAtPath (shortenN 2 ParReduction.path1) =
->                         :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z")
-> test4 = Refl
-
-> test5 : combAtPath ParReduction.path2 = PrimComb BaseKS.S 3
-> test5 = Refl
-
-> test6 : combAtPath ParReduction.path3 = PrimComb BaseKS.S 3
-> test6 = Refl
-
-simStep {t=ParReduction.excomb} {tr=ParReduction.rescomb} [redex1, redex2,redex3]
+-- > redex1 : Redex SimReduction.excomb
+-- > redex1 = RPath StepS path1
+--
+-- > redex2 : Redex SimReduction.excomb
+-- > redex2 = RPath StepS path2
+--
+-- > redex3 : Redex SimReduction.excomb
+-- > redex3 = RPath StepS path3
