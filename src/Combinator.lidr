@@ -41,7 +41,7 @@
 >   _            == _            = False
 
 > implementation Show base => Show (Comb base) where
->   showPrec d (PrimComb _ c) = show c
+>   showPrec d (PrimComb c _) = show c
 >   showPrec d (Var n)   = show n
 >   showPrec d (App a b) = showParens (d > Open) (showPrec Open a ++ " # " ++ showPrec App b)
 

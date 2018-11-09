@@ -49,7 +49,8 @@ pairs of elements of [X].  *)
 > symmetricIsConfluent : {xt: Type} -> (rt : Relation xt) -> symmetric rt -> confluent rt
 > symmetricIsConfluent r sym = \ x, y1, y2, r1, r2 => (x ** (sym r1, sym r2))
 
-> confluenceToMulti : {xt: Type} -> {r: Relation xt} -> confluent r -> confluent (Multi r)
+> ||| If we have any relation which is confluent, then its transitive closure is confluent as well
+> confluenceToMulti : {r: Relation xt} -> confluent r -> confluent (Multi r)
 > confluenceToMulti {r} hyp x y1 y2 m1 m2 =
 >   case m1 of
 >     MultiRefl =>
