@@ -5,26 +5,62 @@
 > import BinaryTree
 > import Combinator
 > import BaseKS
+> import BaseKSIBC
+> import BaseBWCK
 
 > %access public export
 > %default total
 
-
 === Ranking and unranking
 
-> unrank : Int -> Comb KS
-> unrank 0 = :K
-> unrank 1 = :S
-> unrank n =
+> unrankKS : Int -> Comb KS
+> unrankKS 0 = PrimComb K 2
+> unrankKS 1 = PrimComb S 3
+> unrankKS n =
 >   let (ln,rn) = splitnum (n - 1)
->   in  App (unrank (assert_smaller n ln)) (unrank (assert_smaller n rn))
+>   in  App (unrankKS (assert_smaller n ln)) (unrankKS (assert_smaller n rn))
 
--- > rank : (Show a, Eq a) => BinaryTree a -> Int
--- > rank (BLeaf a) = 0
--- > rank (BNode l r) = 1 + combnum (rank l) (rank r)
+> rankKS : Comb KS -> Int
+> rankKS (Var _) = -1
+> rankKS (PrimComb K _) = 0
+> rankKS (PrimComb S _) = 1
+> rankKS (App l r) = 1 + combnum (rankKS l) (rankKS r)
 
+> unrankBWCK : Int -> Comb BWCK
+> unrankBWCK 0 = :B
+> unrankBWCK 1 = :W
+> unrankBWCK 2 = :C
+> unrankBWCK 3 = :K
+> unrankBWCK n =
+>   let (ln,rn) = splitnum (n - 1)
+>   in  App (unrankBWCK (assert_smaller n ln)) (unrankBWCK (assert_smaller n rn))
 
+> rankBWCK : Comb BWCK -> Int
+> rankBWCK (Var _) = -1
+> rankBWCK (PrimComb B _) = 0
+> rankBWCK (PrimComb W _) = 1
+> rankBWCK (PrimComb C _) = 2
+> rankBWCK (PrimComb K _) = 3
+> rankBWCK a@(App l r) = 1 + combnum (rankBWCK (assert_smaller a l)) (rankBWCK (assert_smaller a r))
 
+> unrankKSIBC : Int -> Comb KSIBC
+> unrankKSIBC 0 = :K
+> unrankKSIBC 1 = :S
+> unrankKSIBC 2 = :I
+> unrankKSIBC 3 = :B
+> unrankKSIBC 4 = :C
+> unrankKSIBC n =
+>   let (ln,rn) = splitnum (n - 1)
+>   in  App (unrankKSIBC (assert_smaller n ln)) (unrankKSIBC (assert_smaller n rn))
+
+> rankKSIBC : Comb KSIBC -> Int
+> rankKSIBC (Var _) = -1
+> rankKSIBC (PrimComb K _) = 0
+> rankKSIBC (PrimComb S _) = 1
+> rankKSIBC (PrimComb I _) = 2
+> rankKSIBC (PrimComb B _) = 3
+> rankKSIBC (PrimComb C _) = 4
+> rankKSIBC a@(App l r) = 1 + combnum (rankKSIBC (assert_smaller a l)) (rankKSIBC (assert_smaller a r))
 
 -- > ||| Take precisely n elements from the stream
 -- > ||| @ n how many elements to take
@@ -39,11 +75,14 @@
 
 ==== Tests
 
-> testRank : rank (unrank 0 300) = 300
-> testRank = Refl
+> testRankBWCK : map GenComb.rankBWCK (map GenComb.unrankBWCK [295..300]) = [295..300]
+> testRankBWCK = Refl
 
-> exTree : BinaryTree Int
-> exTree = BNode (BNode (BLeaf 1) (BLeaf 2))(BNode (BLeaf 3) (BLeaf 4))
+> testRankKS : map GenComb.rankKS (map GenComb.unrankKS [295..300]) = [295..300]
+> testRankKS = Refl
 
-> test1 : show BinaryTree.exTree = "1->2->(3->4)"
-> test1 = Refl
+> testRankKSIBC : map GenComb.rankKSIBC (map GenComb.unrankKSIBC [295..300]) = [295..300]
+> testRankKSIBC = Refl
+
+> lemmaRank1 : {n:Int} -> (c : Comb BWCK ** c = (unrankBWCK n) -> n = rankBWCK c)
+> lemmaRank1 {n} = (unrankBWCK n ** (\ Refl => ?hole))

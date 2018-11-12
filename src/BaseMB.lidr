@@ -5,6 +5,7 @@
 > import Combinator
 > import Reduction
 > import Decidable.Equality
+> import Other
 
 > %access public export
 > %default total
@@ -27,14 +28,14 @@ A base with M and B
 >   B == B = True
 >   _ == _ = False
 
-> bNotM : B = M -> Void
-> bNotM Refl impossible
+> Uninhabited (B = M) where
+>   uninhabited Refl impossible
 
 > implementation DecEq MB where
 >   decEq M M = Yes Refl
 >   decEq B B = Yes Refl
->   decEq B M = No bNotM
->   decEq M B = No (negEqSym bNotM)
+>   decEq B M = No absurd
+>   decEq M B = No absurdEqSym
 
 > implementation Show MB where
 >   show M = ":M"

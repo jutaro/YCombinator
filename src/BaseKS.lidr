@@ -5,6 +5,7 @@
 > import Combinator
 > import Reduction
 > import Decidable.Equality
+> import Other
 
 > %access public export
 > %default total
@@ -18,21 +19,21 @@ A basic combinator base
 > syntax ":K" = PrimComb K 2;
 > syntax ":S" = PrimComb S 3;
 
-> implementation Eq KS where
+> Eq KS where
 >   K == K = True
 >   S == S = True
 >   _ == _ = False
 
-> kNotS : K = S -> Void
-> kNotS Refl impossible
+> Uninhabited (K = S) where
+>   uninhabited Refl impossible
 
-> implementation DecEq KS where
+> DecEq KS where
 >   decEq K K = Yes Refl
->   decEq K S = No kNotS
->   decEq S K = No (negEqSym kNotS)
+>   decEq K S = No $ absurd
+>   decEq S K = No $ absurdEqSym
 >   decEq S S = Yes Refl
 
-> implementation Show KS where
+> Show KS where
 >   show K = ":K"
 >   show S = ":S"
 

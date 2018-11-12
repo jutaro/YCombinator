@@ -6,6 +6,7 @@
 > import Reduction
 > import RevReduction
 > import Decidable.Equality
+> import Other 
 
 > %access public export
 > %default total
@@ -36,23 +37,23 @@ A base with combinators B, W, C and K
 >   K == K = True
 >   _ == _ = False
 
-> bNotW : B = W -> Void
-> bNotW Refl impossible
+> Uninhabited (B = W) where
+>   uninhabited Refl impossible
 
-> bNotC : B = C -> Void
-> bNotC Refl impossible
+> Uninhabited (B = C) where
+>   uninhabited Refl impossible
 
-> bNotK : B = K -> Void
-> bNotK Refl impossible
+> Uninhabited (B = K) where
+>   uninhabited Refl impossible
 
-> wNotC : W = C -> Void
-> wNotC Refl impossible
+> Uninhabited (W = C) where
+>   uninhabited Refl impossible
 
-> wNotK : W = K -> Void
-> wNotK Refl impossible
+> Uninhabited (W = K) where
+>   uninhabited Refl impossible
 
-> cNotK : C = K -> Void
-> cNotK Refl impossible
+> Uninhabited (C = K) where
+>   uninhabited Refl impossible
 
 > implementation DecEq BWCK where
 >   decEq B B = Yes Refl
@@ -60,21 +61,21 @@ A base with combinators B, W, C and K
 >   decEq C C = Yes Refl
 >   decEq K K = Yes Refl
 
->   decEq B W = No bNotW
->   decEq B C = No bNotC
->   decEq B K = No bNotK
+>   decEq B W = No absurd
+>   decEq B C = No absurd
+>   decEq B K = No absurd
 
->   decEq W B = No (negEqSym bNotW)
->   decEq W C = No wNotC
->   decEq W K = No wNotK
+>   decEq W B = No absurdEqSym
+>   decEq W C = No absurd
+>   decEq W K = No absurd
 
->   decEq C B = No (negEqSym bNotC)
->   decEq C W = No (negEqSym wNotC)
->   decEq C K = No cNotK
+>   decEq C B = No absurdEqSym
+>   decEq C W = No absurdEqSym
+>   decEq C K = No absurd
 
->   decEq K B = No (negEqSym bNotK)
->   decEq K W = No (negEqSym wNotK)
->   decEq K C = No (negEqSym cNotK)
+>   decEq K B = No absurdEqSym
+>   decEq K W = No absurdEqSym
+>   decEq K C = No absurdEqSym
 
 > implementation Show BWCK where
 >   show B = ":B"

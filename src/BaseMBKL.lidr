@@ -6,6 +6,7 @@
 > import Reduction
 > import RevReduction
 > import Decidable.Equality
+> import Other
 
 > %access public export
 > %default total
@@ -36,41 +37,41 @@ A base with M, B, K and L
 >   L == L = True
 >   _ == _ = False
 
-> bNotM : B = M -> Void
-> bNotM Refl impossible
+> Uninhabited (B = M) where
+>   uninhabited Refl impossible
 
-> bNotL : B = L -> Void
-> bNotL Refl impossible
+> Uninhabited (B = L) where
+>   uninhabited Refl impossible
 
-> kNotM : K = M -> Void
-> kNotM Refl impossible
+> Uninhabited (K = M) where
+>   uninhabited Refl impossible
 
-> kNotB : K = B -> Void
-> kNotB Refl impossible
+> Uninhabited (K = B) where
+>   uninhabited Refl impossible
 
-> kNotL : K = L -> Void
-> kNotL Refl impossible
+> Uninhabited (K = L) where
+>   uninhabited Refl impossible
 
-> lNotM : L = M -> Void
-> lNotM Refl impossible
+> Uninhabited (L = M) where
+>   uninhabited Refl impossible
 
 > implementation DecEq MBKL where
 >   decEq M M = Yes Refl
 >   decEq B B = Yes Refl
 >   decEq K K = Yes Refl
 >   decEq L L = Yes Refl
->   decEq B M = No bNotM
->   decEq B K = No (negEqSym kNotB)
->   decEq B L = No bNotL
->   decEq M B = No (negEqSym bNotM)
->   decEq M K = No (negEqSym kNotM)
->   decEq M L = No (negEqSym lNotM)
->   decEq K M = No kNotM
->   decEq K B = No kNotB
->   decEq K L = No kNotL
->   decEq L M = No lNotM
->   decEq L B = No (negEqSym bNotL)
->   decEq L K = No (negEqSym kNotL)
+>   decEq B M = No absurd
+>   decEq B K = No absurdEqSym
+>   decEq B L = No absurd
+>   decEq M B = No absurdEqSym
+>   decEq M K = No absurdEqSym
+>   decEq M L = No absurdEqSym
+>   decEq K M = No absurd
+>   decEq K B = No absurd
+>   decEq K L = No absurd
+>   decEq L M = No absurd
+>   decEq L B = No absurdEqSym
+>   decEq L K = No absurdEqSym
 
 > implementation Show MBKL where
 >   show M = ":M"
