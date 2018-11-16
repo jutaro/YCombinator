@@ -6,6 +6,8 @@
 > import Reduction
 > import Relation
 > import BaseBWCK
+> import Id
+> import Data.List
 
 > %access public export
 > %default total
@@ -34,17 +36,31 @@ The arity is the minimum number of args on which a reduction happens
 > spine (App l r) = r :: spine l
 > spine other = [other]
 
+> occursInC : (id : Id) -> Comb b -> Bool
+> occursInC id (PrimComb _ _) = False
+> occursInC id (App l r) = occursInC id l || occursInC id r
+> occursInC id (Var id2) = id == id2
+
 > ||| Generator of var names (step1)
 > primVarNames : List String
 > primVarNames = ["x", "y", "z", "u", "v", "w"]
 
 > ||| Generator of var names (step2)
-> varNames : List String
-> varNames = primVarNames ++ concat (map (\i => map (\n => show i ++ n) primVarNames) [1..6])
+> varIds : List Id
+> varIds = map MkId $ primVarNames ++ concat (map (\i => map (\n => show i ++ n) primVarNames) [1..2])
 
 > ||| Generator of Vars
 > varCombs : Reduce base => List (Comb base)
-> varCombs = map Var varNames
+> varCombs = map Var varIds
+
+> xv : Reduce base => Comb base
+> xv = head varCombs
+
+> yv : Reduce base => Comb base
+> yv = head (tail varCombs)
+
+> zv : Reduce base => Comb base
+> zv = head (tail (tail varCombs))
 
 > ||| Returns arity of combinator
 > arity : Reduce base => Comb base -> Maybe Nat

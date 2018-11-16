@@ -9,6 +9,7 @@
 > import Reduction
 > import BaseKS
 > import Data.List.Quantifiers
+> import Id
 
 > %access public export
 > %default total
@@ -92,10 +93,10 @@
 > asUntypedPath Here   = Here'
 
 > excomb : Comb KS
-> excomb = :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z") # Var "z"
+> excomb = :S # (:S # xv # yv # zv) # (:S # xv # yv # zv) # zv
 
 > rcomb : Comb KS
-> rcomb = Var "x" # Var "z" # (Var "y" # Var "z") # Var "z" # (Var "x" # Var "z" # (Var "y" # Var "z") # Var "z")
+> rcomb = xv # zv # (yv # zv) # zv # (xv # zv # (yv # zv) # zv)
 
 > path1 : Path Path.excomb
 > path1 = LP (LP (LP Here))
@@ -109,15 +110,17 @@
 > test1 : combAtPath Path.path1 = PrimComb BaseKS.S 3
 > test1 = Refl
 
-> test2 : combAtPath (shortenPath Path.path1) = :S # (:S # Var "x" # Var "y" # Var "z")
+> test2 : combAtPath (shortenPath Path.path1) = :S # (:S # Var (MkId "x") # Var (MkId "y") # Var (MkId "z"))
 > test2 = Refl
 
 > test3 : combAtPath (shortenPath (shortenPath Path.path1)) =
->                         :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z")
+>                         :S # (:S # Var (MkId "x") # Var (MkId "y") # Var (MkId "z"))
+>                         # (:S # Var (MkId "x") # Var (MkId "y") # Var (MkId "z"))
 > test3 = Refl
 
 > test4 : combAtPath (shortenN 2 Path.path1) =
->                         :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z")
+>                         :S # (:S # Var (MkId "x") # Var (MkId "y") # Var (MkId "z")) #
+>                         (:S # Var (MkId "x") # Var (MkId "y") # Var (MkId "z"))
 > test4 = Refl
 
 > test5 : combAtPath Path.path2 = PrimComb BaseKS.S 3

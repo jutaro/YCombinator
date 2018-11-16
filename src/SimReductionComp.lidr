@@ -6,6 +6,7 @@
 > import Reduction
 > import Path
 > import BaseKS
+> import Id
 
 
 > %access public export

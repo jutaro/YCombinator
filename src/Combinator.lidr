@@ -3,6 +3,7 @@
 > module Combinator
 
 > import Decidable.Equality
+> import Id
 
 > %access public export
 > %default total
@@ -16,8 +17,9 @@
 >   data Comb : (base: Type) -> Type where
 >     PrimComb : Reduce base => base -> Nat -> Comb base
 >     App : {base: Type} -> Comb base -> Comb base -> Comb base
->     Var : String -> Comb base
+>     Var : Id -> Comb base
 >
+
 > -- Combinatory bases are implemented with this interface
 >   interface DecEq base => Reduce base where
 >     ||| computational reduction
@@ -30,10 +32,6 @@
 > (#) : {base:Type} -> Comb base -> Comb base -> Comb base
 > (#) = App
 
-> -- this is a specialized version of `appInjective` below
-> combinatorExtensionality : {a, b : Comb base} -> (x : Comb base) -> Reduce base => a # x = b # x -> a = b
-> combinatorExtensionality _ Refl = Refl
-
 > implementation Eq base => Eq (Comb base) where
 >   (PrimComb _ a) == (PrimComb _ b) = a == b
 >   (App a b)    == (App c d)    = a == c && b == d
@@ -45,19 +43,29 @@
 >   showPrec d (Var n)   = show n
 >   showPrec d (App a b) = showParens (d > Open) (showPrec Open a ++ " # " ++ showPrec App b)
 
+> -- this is a specialized version of `appInjective` below
+> combinatorExtensionality : {a, b : Comb base} -> (x : Comb base) -> Reduce base => a # x = b # x -> a = b
+> combinatorExtensionality _ Refl = Refl
+
 > combInjective : {a, b : base} -> Reduce base => PrimComb a = PrimComb b -> a = b
 > combInjective Refl = Refl
 
 > varInjective : Var a = Var b -> a = b
 > varInjective Refl = Refl
 
+> varCongruent : a = b -> Var {base} a = Var {base} b
+> varCongruent Refl = Refl
+
 > appCongruent : {a, b, c, d : Comb base} -> a = c -> b = d -> App a b = App c d
 > appCongruent Refl Refl = Refl
+
+> primCongruent : {a, b: base} -> Reduce base => {n, m: Nat} -> a = b -> n = m -> PrimComb a n = PrimComb b m
+> primCongruent Refl Refl = Refl
 
 > appInjective : {a, b, c, d : Comb base}  -> App a b = App c d -> (a = c, b = d)
 > appInjective Refl = (Refl,Refl)
 
-> primNotApp : {a : base} -> (Reduce base) => PrimComb a _ = App _ _ -> Void
+> primNotApp : {a : base} -> (Reduce base) => PrimComb a _ = Combinator.App _ _ -> Void
 > primNotApp Refl impossible
 
 > varNotPrim : {a : base} -> (Reduce base) => Var n = PrimComb a _ -> Void

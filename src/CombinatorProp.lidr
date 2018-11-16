@@ -9,6 +9,8 @@
 > import Reduction
 > import BaseKS
 > import Other
+> import Id
+> import CombinatorCompProp
 
 > %access public export
 > %default total
@@ -74,9 +76,9 @@ TODO: Change to maybe, no algorithm to decide equality
 > ||| We give a counterexample to prove this
 > step_not_deterministic : Not (deterministic (Step {b= KS}))
 > step_not_deterministic hyp =
->   case hyp (:K # (:K # Var "x" # Var "y") # Var "z")
->             (:K # Var "x" # Var "y")
->             (:K # Var "x" # Var "z")
+>   case hyp (:K # (:K # xv # yv) # zv)
+>             (:K # xv # yv)
+>             (:K # xv # zv)
 >             (Prim StepK)
 >             (AppL (AppR (Prim StepK))) of
 >     Refl impossible

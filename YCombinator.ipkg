@@ -3,9 +3,12 @@ package YCombinator
 modules    = Other,
              Functions,
              Relation,
+             Id,
 
              Combinator,
              Reduction,
+             CombinatorCompProp,
+             CombinatorProp,
              RevReduction,
              Path,
 --             SimReduction,
@@ -19,9 +22,8 @@ modules    = Other,
              Smullyan3,
              Smullyan4,
              Smullyan5,
-             CombinatorCompProp,
-             CombinatorProp,
-             BinaryTree
+             BinaryTree,
+             LambdaBase
 
 
 

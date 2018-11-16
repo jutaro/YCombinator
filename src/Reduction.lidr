@@ -6,6 +6,7 @@
 > import Relation
 > import Combinator
 > import Data.List.Quantifiers
+> import Id
 
 
 > %access public export
