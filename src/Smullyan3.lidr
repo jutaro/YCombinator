@@ -8,6 +8,7 @@ Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 > import RevReduction
 > import BaseMBKL
 > import BaseBWCK
+> import Id
 
 > %access public export
 > %default total

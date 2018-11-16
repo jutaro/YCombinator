@@ -9,6 +9,9 @@
 > import Reduction
 > import BaseKS
 > import Other
+> import Id
+> import Data.List
+> import CombinatorCompProp
 
 > %access public export
 > %default total
@@ -29,7 +32,7 @@ TODO: Change to maybe, no algorithm to decide equality
 > ||| WeakEq instance
 > ||| TODO: Base this on eqStep, when similarity of whr and Steps is established
 > ||| so that we can live with one beleive_me
-> implementation (DecEq b, StructEq (Comb b), Reduce b) => WeakEq (Comb b) where
+> implementation (DecEq b, StructEq (Comb b {ids}), Reduce b) => WeakEq (Comb b {ids}) where
 >   weakEq l r =
 >     case structEq l r of
 >       Just p =>  Just p
@@ -56,7 +59,7 @@ TODO: Change to maybe, no algorithm to decide equality
 >   where normalKS': (b : Comb KS) -> Step (:K # :S) b -> (:K # :S) = b -> Void
 >         normalKS' (PrimComb K _) step Refl impossible
 >         normalKS' (PrimComb BaseKS.S _) step Refl impossible
->         normalKS' (Var _) step Refl impossible
+>         normalKS' (Var _ {p}) step Refl impossible
 >         normalKS' (App l r) step hyp =
 >           case step of
 >             Prim _ impossible
@@ -72,24 +75,24 @@ TODO: Change to maybe, no algorithm to decide equality
 === Deterministic
 
 > ||| We give a counterexample to prove this
-> step_not_deterministic : Not (deterministic (Step {b= KS}))
+> step_not_deterministic : Not (deterministic (Step {b=KS} {ids=CombinatorCompProp.varIds}))
 > step_not_deterministic hyp =
->   case hyp (:K # (:K # Var "x" # Var "y") # Var "z")
->             (:K # Var "x" # Var "y")
->             (:K # Var "x" # Var "z")
+>   case hyp (:K # (:K # x # y) # z)
+>             (:K # x # y)
+>             (:K # x # z)
 >             (Prim StepK)
 >             (AppL (AppR (Prim StepK))) of
 >     Refl impossible
 
 === Confluence
 
-> stepNotConfluent : Not (confluent (Step {b = KS}))
+> stepNotConfluent : Not (confluent (Step {b = KS} {ids=CombinatorCompProp.varIds}))
 > stepNotConfluent hyp =
->   let (z ** (lh,rh)) = hyp (:K # :S # (:K # :S # :K)) (:S) (:K # :S # :S) stepK (AppR stepK)
->   in  lemma1 z lh
+>   let (z' ** (lh,rh)) = hyp (:K # :S # (:K # :S # :K)) (:S) (:K # :S # :S) stepK (AppR stepK)
+>   in  lemma1 lh
 >     where
->       lemma1 : (z: Comb KS) -> Not (Step :S z)
->       lemma1 z hyp =
+>       lemma1 : Not (Step {b = KS} {ids=CombinatorCompProp.varIds} (PrimComb BaseKS.S 3) z)
+>       lemma1 hyp =
 >         case hyp of
 >           Prim StepS impossible
 >           Prim StepK impossible

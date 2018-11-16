@@ -3,6 +3,9 @@
 > module Combinator
 
 > import Decidable.Equality
+> import Id
+> import Data.List
+
 
 > %access public export
 > %default total
@@ -11,45 +14,52 @@
 
 > mutual
 >
-> -- ||| a term can be a a primitive combinator or an application
-> -- ||| or a variable. Variables are just placeholders and no substitution will be defined
->   data Comb : (base: Type) -> Type where
->     PrimComb : Reduce base => base -> Nat -> Comb base
->     App : {base: Type} -> Comb base -> Comb base -> Comb base
->     Var : String -> Comb base
+> -- ||| A term can be a a primitive combinator or an application
+> -- ||| or a variable. Variables are just placeholders and no substitution will be defined.
+> -- ||| A variable free term can be distinguished by type
+>   data Comb : (base: Type) -> {ids: List Id} -> Type where
+>     PrimComb : Reduce base => base -> Nat -> Comb base {ids}
+>     App : Comb base {ids} -> Comb base {ids} -> Comb base {ids}
+>     Var : (id : Id) -> {auto p : Elem id ids} -> Comb base {ids}
 >
 > -- Combinatory bases are implemented with this interface
 >   interface DecEq base => Reduce base where
 >     ||| computational reduction
->     reduceStep : Comb base -> Maybe (Comb base)
+>     reduceStep : Comb base {ids} -> Maybe (Comb base {ids})
 >     ||| type level reduction
->     PrimRed    : {base : Type} -> Comb base -> Comb base -> Type
+>     PrimRed    : {base : Type} -> Comb base {ids} -> Comb base {ids} -> Type
 
 > infixl 9 #
 > -- ||| Application operator
-> (#) : {base:Type} -> Comb base -> Comb base -> Comb base
+> (#) : {base:Type} -> {ids: List Id} -> Comb base {ids} -> Comb base {ids} -> Comb base {ids}
 > (#) = App
 
 > -- this is a specialized version of `appInjective` below
 > combinatorExtensionality : {a, b : Comb base} -> (x : Comb base) -> Reduce base => a # x = b # x -> a = b
 > combinatorExtensionality _ Refl = Refl
 
-> implementation Eq base => Eq (Comb base) where
+> implementation Eq base => Eq (Comb base {ids}) where
 >   (PrimComb _ a) == (PrimComb _ b) = a == b
 >   (App a b)    == (App c d)    = a == c && b == d
->   (Var n1)     == (Var n2)     = n1 == n2
+>   (Var n1)   == (Var n2)       = n1 == n2
 >   _            == _            = False
 
-> implementation Show base => Show (Comb base) where
+> implementation Show base => Show (Comb base {ids}) where
 >   showPrec d (PrimComb c _) = show c
->   showPrec d (Var n)   = show n
->   showPrec d (App a b) = showParens (d > Open) (showPrec Open a ++ " # " ++ showPrec App b)
+>   showPrec d (Var n)        = show n
+>   showPrec d (App a b)      = showParens (d > Open) (showPrec Open a ++ " # " ++ showPrec App b)
 
 > combInjective : {a, b : base} -> Reduce base => PrimComb a = PrimComb b -> a = b
 > combInjective Refl = Refl
 
-> varInjective : Var a = Var b -> a = b
+> varInjective : Var a {p=p1} = Var b {p=p2} -> a = b
 > varInjective Refl = Refl
+
+> varCongruent : {p1: Elem a ids} -> {p2: Elem b ids} -> a = b -> p1 = p2 -> Var a {p=p1} = Var b {p=p2}
+> varCongruent {p1} Refl Refl = Refl
+
+> prfCongruent : {p1: Elem a ids} -> {p2: Elem b ids} -> a = b -> p1 = p2
+> prfCongruent Refl = ?prfCongruent_rhs -- TODO: Maybe ask
 
 > appCongruent : {a, b, c, d : Comb base} -> a = c -> b = d -> App a b = App c d
 > appCongruent Refl Refl = Refl
@@ -60,14 +70,13 @@
 > primNotApp : {a : base} -> (Reduce base) => PrimComb a _ = App _ _ -> Void
 > primNotApp Refl impossible
 
-> varNotPrim : {a : base} -> (Reduce base) => Var n = PrimComb a _ -> Void
+> varNotPrim : {a : base} -> (Reduce base) => Var n {p} = PrimComb a _ -> Void
 > varNotPrim Refl impossible
 
-> varNotApp : Var n = App _ _ -> Void
+> varNotApp : Var n {p} = App _ _ -> Void
 > varNotApp Refl impossible
 
 Using here a new interface to use DecEq for "reductional" equality
-
 
 > -- Correct is structEq l r -> l = r, but Not (structEq) -> Not (l = r) is not true
 > -- as we will define '=' as weak equality
@@ -75,36 +84,40 @@ Using here a new interface to use DecEq for "reductional" equality
 >   ||| Decide whether two elements of `base` are propositionally equal
 >   total structEq : (x1, x2 : t) -> Maybe (x1 = x2)
 
-> implementation (DecEq base) => StructEq (Comb base) where
+> implementation (DecEq base) => StructEq (Comb base {ids}) where
 >   structEq (PrimComb a n) (PrimComb b m) with (decEq a b,decEq n m)
->     | (Yes prf1,Yes prf2)  = Just $ rewrite prf1 in cong prf2
+>     | (Yes prf1, Yes prf2)  =
+>         let f1 = 1
+>         in Just $ ?structEq_rhs --  cong prf2
+
 >     | _  = Nothing
 >   structEq (App a b) (App c d) with (structEq a c)
 >     structEq (App a b) (App c d) | Just p with (structEq b d)
 >       structEq (App a b) (App c d) | Just p | Just p' = Just $ appCongruent p p'
 >       structEq (App a b) (App c d) | Just p | Nothing =  Nothing
 >     structEq (App a b) (App c d) | Nothing = Nothing
->   structEq (Var n1) (Var n2) with (decEq n1 n2)
->     | Yes p = Just $ cong p
->     | No contra = Nothing
+>   structEq (Var {ids} n1 {p=p1}) (Var {ids} n2 {p=p2}) with (decEq n1 n2)
+>     | Yes prf = Just $ varCongruent prf (prfCongruent prf)
+>     | _ = Nothing
 >   structEq (PrimComb c _) (App l r) = Nothing
 >   structEq (App l r) (PrimComb c _) = Nothing
->   structEq (Var n) (PrimComb c _)   = Nothing
->   structEq (PrimComb c _) (Var n)   = Nothing
->   structEq (Var n) (App l r)        = Nothing
->   structEq (App l r) (Var n)        = Nothing
+>   structEq (Var n {p}) (PrimComb c _) = Nothing
+>   structEq (PrimComb c _) (Var n {p}) = Nothing
+>   structEq (Var n {p}) (App l r)      = Nothing
+>   structEq (App l r) (Var n {p})      = Nothing
+
 
 Subterms
 
-> subterm' : StructEq (Comb base) => (t1, t2 : Comb base) -> Maybe (t1 = t2) -> Bool
+> subterm' : StructEq (Comb base {ids}) => (t1, t2 : Comb base {ids}) -> Maybe (t1 = t2) -> Bool
 > subterm' t1 t2            (Just _)  = True
 > subterm' t1 (App t2l t2r) Nothing   = subterm' t1 t2l (structEq t1 t2l) || subterm' t1 t2r (structEq t1 t2r)
 > subterm' t1 _             Nothing   = False
 
-> subterm : StructEq (Comb base) => (t1, t2 : Comb base) -> Bool
+> subterm : StructEq (Comb base {ids}) => (t1, t2 : Comb base {ids}) -> Bool
 > subterm t1 t2 = subterm' t1 t2 (structEq t1 t2)
 
-> data Subterm : Comb b -> Comb b -> Type where
+> data Subterm : Comb b {ids} -> Comb b {ids} -> Type where
 >   SubtermEq : Subterm x x
 >   SubtermAppL : Subterm x l -> Subterm x (l # r)
 >   SubtermAppR : Subterm x r -> Subterm x (l # r)

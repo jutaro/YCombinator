@@ -8,7 +8,8 @@
 > import CombinatorCompProp
 > import Reduction
 > import BaseKS
-> import Data.List.Quantifiers
+> import Data.List
+> import Id
 
 > %access public export
 > %default total
@@ -16,10 +17,10 @@
 === Path
 
 > ||| Path is typed with the combinator, so it can't go wrong
-> data Path : {b: Type} -> Comb b -> Type where
->   LP  : Reduce b  => {l,r: Comb b} -> Path l -> Path (App l r)
->   RP  : Reduce b  => {l,r: Comb b} -> Path r -> Path (App l r)
->   Here : Reduce b => {h : Comb b}  -> Path h
+> data Path : {b: Type} -> {ids: List Id} -> Comb b {ids} -> Type where
+>   LP  : Reduce b  => {l,r: Comb b {ids}} -> Path l -> Path (App l r)
+>   RP  : Reduce b  => {l,r: Comb b {ids}} -> Path r -> Path (App l r)
+>   Here : Reduce b => {h : Comb b {ids}}  -> Path h
 
 > implementation Eq (Path t) where
 >   (LP r) == (LP r2) = r == r2
@@ -39,7 +40,7 @@
 >   compare Here _ = LT
 
 > ||| Find Combinator at path
-> combAtPath : Reduce b => {combType : Comb b} -> Path combType -> Comb b
+> combAtPath : Reduce b => {combType : Comb b {ids}} -> Path combType -> Comb b {ids}
 > combAtPath (LP p) = combAtPath p
 > combAtPath (RP p) = combAtPath p
 > combAtPath {combType} Here = combType
@@ -91,11 +92,11 @@
 > asUntypedPath (RP c) = RP' (asUntypedPath c)
 > asUntypedPath Here   = Here'
 
-> excomb : Comb KS
-> excomb = :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z") # Var "z"
+> excomb : Comb KS {ids=CombinatorCompProp.varIds}
+> excomb = :S # (:S # x # y # z) # (:S # x # y # z) # z
 
-> rcomb : Comb KS
-> rcomb = Var "x" # Var "z" # (Var "y" # Var "z") # Var "z" # (Var "x" # Var "z" # (Var "y" # Var "z") # Var "z")
+> rcomb : Comb KS {ids=CombinatorCompProp.varIds}
+> rcomb = x # z # (y # z) # z # (x # z # (y # z) # z)
 
 > path1 : Path Path.excomb
 > path1 = LP (LP (LP Here))
@@ -109,15 +110,18 @@
 > test1 : combAtPath Path.path1 = PrimComb BaseKS.S 3
 > test1 = Refl
 
-> test2 : combAtPath (shortenPath Path.path1) = :S # (:S # Var "x" # Var "y" # Var "z")
+> test2 : combAtPath (shortenPath Path.path1) =
+>           :S # (:S # CombinatorCompProp.x # CombinatorCompProp.y # CombinatorCompProp.z)
 > test2 = Refl
 
 > test3 : combAtPath (shortenPath (shortenPath Path.path1)) =
->                         :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z")
+>                         :S # (:S # CombinatorCompProp.x # CombinatorCompProp.y # CombinatorCompProp.z) #
+>                              (:S # CombinatorCompProp.x # CombinatorCompProp.y # CombinatorCompProp.z)
 > test3 = Refl
 
 > test4 : combAtPath (shortenN 2 Path.path1) =
->                         :S # (:S # Var "x" # Var "y" # Var "z") # (:S # Var "x" # Var "y" # Var "z")
+>                         :S # (:S # CombinatorCompProp.x # CombinatorCompProp.y # CombinatorCompProp.z)
+>                            # (:S # CombinatorCompProp.x # CombinatorCompProp.y # CombinatorCompProp.z)
 > test4 = Refl
 
 > test5 : combAtPath Path.path2 = PrimComb BaseKS.S 3

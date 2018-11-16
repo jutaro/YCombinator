@@ -7,6 +7,7 @@ Smullyan2 : Is there a sage bird? : Exercises from Mock a Mockingbird (Chapter 1
 > import Reduction
 > import RevReduction
 > import BaseMBKL
+> import Id
 
 > %access public export
 > %default total

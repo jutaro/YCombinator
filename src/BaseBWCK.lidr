@@ -6,7 +6,8 @@
 > import Reduction
 > import RevReduction
 > import Decidable.Equality
-> import Other 
+> import Other
+> import Id
 
 > %access public export
 > %default total

@@ -9,6 +9,7 @@ Smullyan5 : A Galery of Sage Birds? : Exercises from Mock a Mockingbird (Chapter
 > import BaseBWCK
 > import Smullyan3
 > import Smullyan4
+> import Id
 
 > %access public export
 > %default total

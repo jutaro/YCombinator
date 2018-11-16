@@ -6,6 +6,8 @@
 > import Reduction
 > import Path
 > import BaseKS
+> import Id
+> import Data.List
 
 
 > %access public export
@@ -14,7 +16,7 @@
 > ||| Take a step in computational reduction on the first possible redex starting from the head.
 > ||| Return just the new combinator if possible, or Nothing if the head is not a redex
 > ||| which is the same as to say the term is in weak normal form
-> stepSim : {b: Type} -> Reduce b => {default Z n: Nat} -> Comb b -> (Nat, Comb b)
+> stepSim : {b: Type} -> Reduce b => {default Z n: Nat} -> Comb b {ids} -> (Nat, Comb b {ids})
 > stepSim {n} i@(PrimComb _ _)   = (n,i)
 > stepSim {n} i@(Var _)          = (n,i)
 > stepSim {n} i@(App left right) =
@@ -26,7 +28,7 @@
 
 > ||| Applies multiple head steps, until a normal form is reached,
 > ||| or calculates forever, if no weak head normal form exists
-> partial simReduction : {b: Type} -> Reduce b => Comb b -> Comb b
+> partial simReduction : {b: Type} -> Reduce b => Comb b {ids} -> Comb b {ids}
 > simReduction term =
 >   case stepSim term of
 >     (Z, _) => term
@@ -34,7 +36,7 @@
 
 > ||| Applies multiple head steps, until a normal form is reached,
 > ||| or the maximum number of steps has been taken
-> simReductionCut : {b: Type} -> Reduce b => Nat -> Comb b -> Maybe (Comb b)
+> simReductionCut : {b: Type} -> Reduce b => Nat -> Comb b {ids} -> Maybe (Comb b {ids})
 > simReductionCut (S x) term =
 >   case stepSim term of
 >     (Z, _) => Just term
@@ -42,7 +44,7 @@
 > simReductionCut Z term = Nothing
 
 > ||| Short name for convenience
-> sr : {b: Type} -> Reduce b => Comb b -> Maybe (Comb b)
+> sr : {b: Type} -> Reduce b => Comb b {ids} -> Maybe (Comb b {ids})
 > sr = simReductionCut 300
 
 > test1 : sr Path.excomb = Just Path.rcomb

@@ -6,6 +6,8 @@
 > import Relation
 > import Combinator
 > import Data.List.Quantifiers
+> import Id
+> import Data.List
 
 
 > %access public export
@@ -13,8 +15,8 @@
 > %hide Prelude.Stream.(::)
 
 > ||| Single step reduction or One-step reduction
-> data Step : {b: Type} -> Comb b -> Comb b -> Type where
->   Prim    : {l, r: Comb b} -> Reduce b => PrimRed {base=b} l r -> Step {b} l r
+> data Step : {b: Type} -> {ids : List Id} -> Comb b {ids} -> Comb b {ids} -> Type where
+>   Prim    : {l, r: Comb b {ids}} -> Reduce b => PrimRed {base=b} l r -> Step {b} l r
 >   AppL    : Step l res -> Step (l # r) (res # r)
 >   AppR    : Step r res -> Step (l # r) (l # res)
 
@@ -22,22 +24,22 @@ Weak reduction is the transitive closure of One-step reduction.
 We use the Multi Relation to define it as Multi Step
 
 > infixr 6 ->+
-> (->+) : {c1,c2: Comb b} -> Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
+> (->+) : {c1,c2: Comb b {ids}} -> Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
 > (->+) a b = MultiStep a b
 
 > infixr 6 ->-
-> (->-) : {c1,c2,c3: Comb b} -> Step c1 c2 -> Step c2 c3 -> Multi Step c1 c3
+> (->-) : {c1,c2,c3: Comb b {ids}} -> Step c1 c2 -> Step c2 c3 -> Multi Step c1 c3
 > (->-) {c3} a b = MultiStep {z=c3} a (MultiStep b MultiRefl)
 
 > infixr 6 +>+
-> (+>+) : {c1,c2,c3: Comb b} -> Multi Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
+> (+>+) : {c1,c2,c3: Comb b {ids}} -> Multi Step c1 c2 -> Multi Step c2 c3 -> Multi Step c1 c3
 > (+>+) a MultiRefl = a
 > (+>+) MultiRefl b = b
 > (+>+) (MultiStep a MultiRefl) msr = (MultiStep a msr)
 > (+>+) (MultiStep a msl) msr = MultiStep a (msl +>+ msr)
 
 > infixr 6+>-
-> (+>-) : {c1,c2: Comb b} -> Multi Step c1 c2 -> Step c2 c3 -> Multi Step c1 c3
+> (+>-) : {c1,c2: Comb b {ids}} -> Multi Step c1 c2 -> Step c2 c3 -> Multi Step c1 c3
 > (+>-) a b = a +>+ MultiStep b MultiRefl
 
 > ||| Lift Appl to multiple Steps
@@ -68,9 +70,9 @@ We use the Multi Relation to define it as Multi Step
 > ||| Take a step in computational reduction on the head redex.
 > ||| Return Just the new combinator if possible, or Nothing if the head is not a redex,
 > ||| which is the same as to say the term is in weak head normal form
-> stepHead : Reduce b => Comb b -> Maybe (Comb b)
+> stepHead : Reduce b => Comb b {ids} -> Maybe (Comb b {ids})
 > stepHead (PrimComb i n)     = Nothing
-> stepHead (Var n)            = Nothing
+> stepHead (Var n {p})        = Nothing
 > stepHead a@(App head redex) =
 >   case reduceStep a of
 >     Nothing =>
@@ -79,13 +81,12 @@ We use the Multi Relation to define it as Multi Step
 >         Just t => Just (App t redex)
 >     Just t => Just t
 
-
 > ||| Take a step in computational reduction on the first possible redex starting from the head.
 > ||| Return just the new combinator if possible, or Nothing if the head is not a redex
 > ||| which is the same as to say the term is in weak normal form
-> step : Reduce b => Comb b -> Maybe (Comb b)
+> step : Reduce b => Comb b {ids} -> Maybe (Comb b {ids})
 > step (PrimComb i n)     = Nothing
-> step (Var n)            = Nothing
+> step (Var n {p})        = Nothing
 > step a@(App head redex) =
 >   case reduceStep a of
 >     Just t => Just t
@@ -95,13 +96,14 @@ We use the Multi Relation to define it as Multi Step
 >         Nothing =>
 >           case step redex of
 >             Nothing => Nothing
->             Just r => Just (App head r)
+>             Just r  => Just (App head r)
 
 -- Reduction strategies
 
 > ||| Applies multiple head steps, until a normal form is reached,
 > ||| or calculates forever, if no weak head normal form exists
-> partial weakHeadReduction : Reduce b => Comb b -> Comb b
+
+> partial weakHeadReduction : Reduce b => Comb b {ids} -> Comb b {ids}
 > weakHeadReduction term =
 >   case stepHead term of
 >     Nothing => term
@@ -109,7 +111,7 @@ We use the Multi Relation to define it as Multi Step
 
 > ||| Applies multiple head steps, until a normal form is reached,
 > ||| or the maximum number of steps has been taken
-> weakHeadReductionCut : Reduce b => Nat -> Comb b -> Maybe (Comb b)
+> weakHeadReductionCut : Reduce b => Nat -> Comb b {ids} -> Maybe (Comb b {ids})
 > weakHeadReductionCut (S x) term =
 >   case stepHead term of
 >     Nothing => Just term
@@ -117,7 +119,7 @@ We use the Multi Relation to define it as Multi Step
 > weakHeadReductionCut Z term = Nothing
 
 > ||| Short name for convenience
-> whr : Reduce b => Comb b -> Maybe (Comb b)
+> whr : Reduce b => Comb b {ids} -> Maybe (Comb b {ids})
 > whr = weakHeadReductionCut 300
 
 > ||| Computes if a term is in weak head normal form
@@ -134,7 +136,7 @@ We use the Multi Relation to define it as Multi Step
 
 > ||| Applies multiple steps, until a normal form is reached,
 > ||| or calculates forever, if no weak normal form exists
-> partial weakReduction : Reduce b => Comb b -> Comb b
+> partial weakReduction : Reduce b => Comb b {ids} -> Comb b {ids}
 > weakReduction term =
 >   case step term of
 >     Nothing => term
@@ -142,7 +144,7 @@ We use the Multi Relation to define it as Multi Step
 
 > ||| Applies multiple steps, until a normal form is reached,
 > ||| or the maximum number of steps has been taken
-> weakReductionCut : Reduce b => Nat -> Comb b -> Maybe (Comb b)
+> weakReductionCut : Reduce b => Nat -> Comb b {ids} -> Maybe (Comb b {ids})
 > weakReductionCut (S x) term =
 >   case step term of
 >     Nothing => Just term
@@ -150,5 +152,5 @@ We use the Multi Relation to define it as Multi Step
 > weakReductionCut Z term = Nothing
 
 > ||| Short name for convenience
-> wr : Reduce b => Comb b -> Maybe (Comb b)
+> wr : Reduce b => Comb b {ids} -> Maybe (Comb b {ids})
 > wr = weakReductionCut 300
