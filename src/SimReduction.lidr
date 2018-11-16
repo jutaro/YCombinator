@@ -10,7 +10,6 @@
 > import BaseKS
 > import Path
 > import Data.List.Quantifiers
-> import Id
 
 > %access public export
 > %default total

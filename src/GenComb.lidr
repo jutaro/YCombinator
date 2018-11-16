@@ -7,7 +7,6 @@
 > import BaseKS
 > import BaseKSIBC
 > import BaseBWCK
-> import Functions
 
 > %access public export
 > %default total
@@ -63,45 +62,16 @@
 > rankKSIBC (PrimComb C _) = 4
 > rankKSIBC a@(App l r) = 1 + combnum (rankKSIBC (assert_smaller a l)) (rankKSIBC (assert_smaller a r))
 
-// Number of binary trees with n internal nodes is:
-> catalan : Integer -> Integer
-> catalan 0 = 0
-> catalan 1 = 1
-> catalan n = assert_total ((2 * (2 * n - 1) * catalan (n - 1)) `div` (n + 1))
-
-catalan 19 = 1767263190
-
-bei 2 basis Kombinatoren ergibt sich ein Baum mit 17 Knoten
-Die Tabelle hätte eine Größe von 1767263190 * 4 Byte = ~ 7 Gigabyte
-
-catalan 18 = 477638700
-
-bei 2 basis Kombinatoren ergibt sich ein Baum mit 16 Knoten
-Die Tabelle hätte eine Größe von 477638700 * 4 Byte = 1910554800 Byte = ~ 1,9 Gigabyte
-
-catalan 17 = 129644790 Maybe choose this for more realistic simulation
-
-bei 2 basis Kombinatoren ergibt sich ein Baum mit 15 Knoten
-bei 4 basis Kombinatoren ergibt sich ein Baum mit 13 Knoten
-
-Die Tabelle hätte eine Größe von 129644790 * 4 Byte = 518579160 Byte = ~ 0,5 Gigabyte ~ 500 MB
-
-catalan 16 = 35357670
-
-bei 2 basis Kombinatoren ergibt sich ein Baum mit 14 Knoten
-Die Tabelle hätte eine Größe von 35357670 * 4 Byte = 141430680 Byte = ~ 0,141 Gigabyte ~ 140 MB
-
-catalan 15 = 9694845
-
-bei 2 basis Kombinatoren ergibt sich ein Baum mit 13 Knoten
-Die Tabelle hätte eine Größe von 9694845 * 4 Byte = 38779380 Byte = ~ 0,03 Gigabyte ~ 38 MB
-
-catalan 11 = 58786
-
-bei 2 basis Kombinatoren ergibt sich ein Baum mit 9 Knoten
-Die Tabelle hätte eine Größe von 58786 * 2 Byte = 117572 Byte = ~ 0.11 MB = 117 Kilobyte
-
-
+-- > ||| Take precisely n elements from the stream
+-- > ||| @ n how many elements to take
+-- > ||| @ xs the stream
+-- > take' : (n : Nat) -> (xs : Stream a) -> List a
+-- > take' Z _ = []
+-- > take' (S n) (x :: xs) = Force x :: take' n xs
+--
+-- > ||| Produces a list of catalan numbers
+-- > catalans : Stream Integer
+-- > catalans = 1 :: map (\n => sum (zipWith (*) (reverse (take' n catalans)) (take' n catalans))) [1..]
 
 ==== Tests
 

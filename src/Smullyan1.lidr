@@ -7,7 +7,6 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 > import BaseMB
 > import BaseMBKL
 > import Relation
-> import Id
 
 
 > %access public export
@@ -23,7 +22,7 @@ Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 
 2 Egocentric
 
-> egocentric : {base : Type} -> (Reduce base, Eq (Comb base {ids})) => (a: Comb base {ids}) -> Bool
+> egocentric : {base : Type} -> (Reduce base, Eq (Comb base)) => (a: Comb base) -> Bool
 > egocentric a = (a # a) == a
 
 > data Egocentric : {base : Type} -> (a : Comb base) -> (prf: a = a # a) -> Type where

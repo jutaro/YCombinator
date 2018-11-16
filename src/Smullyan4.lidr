@@ -7,7 +7,6 @@ Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mocking
 > import Reduction
 > import BaseBWCK
 > import Smullyan3
-> import Id
 
 > %access public export
 > %default total

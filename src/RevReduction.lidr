@@ -6,13 +6,12 @@
 > import Relation
 > import Combinator
 > import Reduction
-> import Id
 
 > %access public export
 > %default total
 
 > ||| Two way transformation (reduction plus reverse)
-> data Step' : Comb b {ids} -> Comb b {ids} -> Type where
+> data Step' : Comb b -> Comb b -> Type where
 >   Prim'    : {l, r: Comb b} -> Reduce b => PrimRed l r -> Step' l r
 >   AppL'    : Step' l res -> Step' (l # r) (res # r)
 >   AppR'    : Step' r res -> Step' (l # r) (l # res)

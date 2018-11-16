@@ -6,8 +6,6 @@
 > import Reduction
 > import Relation
 > import BaseBWCK
-> import Id
-> import Data.List
 
 > %access public export
 > %default total
@@ -32,7 +30,7 @@ Define arity and Classification of combinators:
 The arity is the minimum number of args on which a reduction happens
 
 > ||| Spine of a combinator as list
-> spine : Reduce b => Comb b {ids} -> List (Comb b {ids})
+> spine : Reduce b => Comb b -> List (Comb b)
 > spine (App l r) = r :: spine l
 > spine other = [other]
 
@@ -41,28 +39,19 @@ The arity is the minimum number of args on which a reduction happens
 > primVarNames = ["x", "y", "z", "u", "v", "w"]
 
 > ||| Generator of var names (step2)
-> varIds : List Id
-> varIds = map MkId $ primVarNames ++ concat (map (\i => map (\n => show i ++ n) primVarNames) [1..2])
+> varNames : List String
+> varNames = primVarNames ++ concat (map (\i => map (\n => show i ++ n) primVarNames) [1..6])
 
 > ||| Generator of Vars
-> varCombs : {ids: List Id} -> Reduce base => List (Comb base {ids})
-> varCombs {ids=varIds} = map (\ n => Var n {p=?varCombs_prf}) varIds
-
-> x : Reduce base => Comb base {ids=CombinatorCompProp.varIds}
-> x = head varCombs
-
-> y : Reduce base => Comb base {ids=CombinatorCompProp.varIds}
-> y = head (tail varCombs)
-
-> z : Reduce base => Comb base {ids=CombinatorCompProp.varIds}
-> z = head (tail (tail varCombs))
+> varCombs : Reduce base => List (Comb base)
+> varCombs = map Var varNames
 
 > ||| Returns arity of combinator
 > arity : Reduce base => Comb base -> Maybe Nat
 > arity comb = case step comb of
 >                 Just _ => Just 0
 >                 Nothing => arity' 1 comb varCombs
->   where arity' : Reduce base => Nat -> Comb base {ids} -> List (Comb base {ids}) -> Maybe Nat
+>   where arity' : Reduce base => Nat -> Comb base -> List (Comb base) -> Maybe Nat
 >         arity' n acc (hd :: tail) =
 >           let combi = acc # hd
 >           in  case step combi of
@@ -70,10 +59,10 @@ The arity is the minimum number of args on which a reduction happens
 >                 Nothing => arity' (S n) combi tail
 >         arity' n acc [] = Nothing
 
-> asApplications :  Reduce base => (l : List (Comb base {ids})) -> {auto ok: NonEmpty l} -> Comb base {ids}
+> asApplications :  Reduce base => (l : List (Comb base)) -> {auto ok: NonEmpty l} -> Comb base
 > asApplications (hd :: tl) = foldl (\accu, ele => accu # ele) hd tl
 
-> prepare : Reduce base => Comb base {ids} -> Maybe (List (Comb base {ids}), Comb base {ids})
+> prepare : Reduce base => Comb base -> Maybe (List (Comb base), Comb base)
 > prepare c = do
 >   i <- arity c
 >   if i == 0
@@ -85,7 +74,7 @@ The arity is the minimum number of args on which a reduction happens
 >             pure (args,res)
 
 > ||| Identity Combinators have the property Z x1 .. xn -> x1 .. xn
-> isIdentity : Eq (Comb base {ids}) => Reduce base => Comb base {ids} -> Maybe Bool
+> isIdentity : Eq (Comb base) => Reduce base => Comb base -> Maybe Bool
 > isIdentity comb = do
 >   (args,res) <- prepare comb
 >   case args of
@@ -100,14 +89,14 @@ The arity is the minimum number of args on which a reduction happens
 > leftAssociated _ = True
 
 > ||| Associators have the property Z x1 .. xn -> M, M not purely left associated
-> isAssociator : Eq (Comb base {ids}) => Reduce base => Comb base {ids} -> Maybe Bool
+> isAssociator : Eq (Comb base) => Reduce base => Comb base -> Maybe Bool
 > isAssociator comb = do
 >   (args,res) <- prepare comb
 >   case args of
 >     (hd :: tail) => pure $ not (leftAssociated res)
 >     [] => Nothing
 
-> contains: Eq (Comb base {ids}) => Comb base {ids} -> Comb base {ids} -> Bool
+> contains: Eq (Comb base) => Comb base -> Comb base -> Bool
 > contains this that =
 >   if this == that
 >     then True
@@ -115,21 +104,21 @@ The arity is the minimum number of args on which a reduction happens
 >       App l r => contains l that || contains r that
 >       _ => False
 
-> containsAll: Eq (Comb base {ids}) => Comb base {ids} -> List (Comb base {ids}) -> Bool
+> containsAll: Eq (Comb base) => Comb base -> List (Comb base) -> Bool
 > containsAll this allThat =
 >   case find (\e => not (contains this e)) allThat of
 >     Nothing => True
 >     Just _ => False
 
 > ||| Cancellators have the property Z x1 .. xn -> M, with at least one of x1 .. xn having no occurence in M
-> isCancellator : Eq (Comb base {ids}) => Reduce base => Comb base {ids} -> Maybe Bool
+> isCancellator : Eq (Comb base) => Reduce base => Comb base -> Maybe Bool
 > isCancellator comb = do
 >   (args,res) <- prepare comb
 >   case args of
 >     (hd :: tail) => pure $ not (containsAll res args)
 >     [] => Nothing
 
-> flattenComb : Comb base {ids} -> List (Comb base {ids})
+> flattenComb : Comb base -> List (Comb base)
 > flattenComb (App l r) = flattenComb l ++ flattenComb r
 > flattenComb other = [other]
 
@@ -155,7 +144,7 @@ The arity is the minimum number of args on which a reduction happens
 > precedingAny [] flattened = False
 
 > ||| Permutators have the property Z x1 .. xn -> M, with M containing an xj preceding an xi (1 <= i < j <= n)
-> isPermutator : Eq (Comb base {ids}) => Reduce base => Comb base {ids} -> Maybe Bool
+> isPermutator : Eq (Comb base) => Reduce base => Comb base -> Maybe Bool
 > isPermutator comb = do
 >   (args,res) <- prepare comb
 >   case args of
@@ -169,7 +158,7 @@ The arity is the minimum number of args on which a reduction happens
 > moreThenOneAny search l = or (map (\e => moreThenOne e l) search)
 
 > ||| Duplicators have the property Z x1 .. xn -> M, with M containing more than one occurance of an xi (1 <= i <= n)
-> isDuplicator : Eq (Comb base {ids}) => Reduce base => Comb base {ids} -> Maybe Bool
+> isDuplicator : Eq (Comb base) => Reduce base => Comb base -> Maybe Bool
 > isDuplicator comb = do
 >   (args,res) <- prepare comb
 >   case args of
@@ -177,7 +166,7 @@ The arity is the minimum number of args on which a reduction happens
 >     [] => Nothing
 
 > ||| Regular combinators have the property Z x1 .. xn -> x1 M
-> isRegular : Eq (Comb base {ids}) => Reduce base => Comb base {ids} -> Maybe Bool
+> isRegular : Eq (Comb base) => Reduce base => Comb base -> Maybe Bool
 > isRegular comb = do
 >   (args,res) <- prepare comb
 >   case args of
