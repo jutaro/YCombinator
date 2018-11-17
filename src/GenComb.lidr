@@ -7,6 +7,7 @@
 > import BaseKS
 > import BaseKSIBC
 > import BaseBWCK
+> import Id
 
 > %access public export
 > %default total

@@ -22,7 +22,10 @@ modules    = Other,
              Smullyan3,
              Smullyan4,
              Smullyan5,
+
+
              BinaryTree,
+             GenComb,  
              LambdaBase
 
 
