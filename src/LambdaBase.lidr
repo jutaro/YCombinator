@@ -52,7 +52,6 @@ Simple untyped lambda calculus without free variables
 > hi : Id
 > hi = MkId "h"
 
-
 > termI : LBTm xs
 > termI = (\ xi . TVar xi)
 
@@ -97,8 +96,8 @@ Simple untyped lambda calculus without free variables
 >           else :S # bracketAbstractKS (assert_smaller (TAbs id t) (TAbs id tl)) # (:K # Var id2)
 >       (TApp tl tr) =>
 >       -- S
->           :S # bracketAbstractKS (assert_smaller (TAbs id t) (TAbs id tl)) #
->                bracketAbstractKS (assert_smaller (TAbs id t) (TAbs id tr))
+>         :S # bracketAbstractKS (assert_smaller (TAbs id t) (TAbs id tl)) #
+>              bracketAbstractKS (assert_smaller (TAbs id t) (TAbs id tr))
 >       -- Nested Abstracts
 >       (TAbs id2 rt) =>  bracketAbstractKS' id (bracketAbstractKS (assert_smaller (TAbs id t) t))
 > bracketAbstractKS (TApp l r) = bracketAbstractKS (assert_smaller (TApp l r) l) #
@@ -129,14 +128,14 @@ Simple untyped lambda calculus without free variables
 >     then :K # (bracketAbstractKSIBC (assert_smaller (TAbs id t) t))
 >     else case t of
 >       -- I
->       (TVar _) => :I
+>       (TVar _) => :I -- since id occurs here it must be identity
 >       (TApp tl (TVar id2)) =>
 >         if id == id2
 >           then if not (occursInL id tl)
 >       --Eta
 >                   then assert_total (bracketAbstractKSIBC (assert_smaller (TAbs id t) tl))
->                   else :C # bracketAbstractKSIBC (assert_smaller (TAbs id t) (TAbs id tl)) # :I
->           else :C # bracketAbstractKSIBC (assert_smaller (TAbs id t) (TAbs id tl)) # (:K # Var id2)
+>                   else :S # bracketAbstractKSIBC (assert_smaller (TAbs id t) (TAbs id tl)) # :I
+>           else :S # bracketAbstractKSIBC (assert_smaller (TAbs id t) (TAbs id tl)) # (:K # Var id2)
 >       (TApp tl tr) =>
 >       -- S
 >         if not (occursInL id tl)
@@ -145,8 +144,8 @@ Simple untyped lambda calculus without free variables
 >           else if not (occursInL id tr)
 >             then :C # bracketAbstractKSIBC  (assert_smaller (TAbs id t) (TAbs id tl)) #
 >                       bracketAbstractKSIBC (assert_smaller (TAbs id t) tr)
->           else :S # bracketAbstractKSIBC (assert_smaller (TAbs id t) (TAbs id tl)) #
->                     bracketAbstractKSIBC (assert_smaller (TAbs id t) (TAbs id tr))
+>             else :S # bracketAbstractKSIBC (assert_smaller (TAbs id t) (TAbs id tl)) #
+>                       bracketAbstractKSIBC (assert_smaller (TAbs id t) (TAbs id tr))
 >       -- Nested Abstracts
 >       (TAbs id2 rt) =>  bracketAbstractKSIBC' id (bracketAbstractKSIBC (assert_smaller (TAbs id t) t))
 > bracketAbstractKSIBC (TApp l r) = bracketAbstractKSIBC (assert_smaller (TApp l r) l) #
@@ -155,23 +154,25 @@ Simple untyped lambda calculus without free variables
 
 -- Tests
 
-> exB : LBTm [LambdaBase.xi,LambdaBase.yi,LambdaBase.zi]
+> exB : LBTm []
 > exB =  (\ xi . (\ yi . (\ zi . TVar xi & (TVar yi & TVar zi))))
 
-> exC : LBTm [LambdaBase.xi,LambdaBase.yi,LambdaBase.zi]
+> exC : LBTm []
 > exC =  (\ xi . (\ yi . (\ zi . TVar xi & TVar zi & TVar yi)))
 
-> exW : LBTm [LambdaBase.xi,LambdaBase.yi,LambdaBase.zi]
+> exW : LBTm []
 > exW =  (\ xi . (\ yi . TVar xi & TVar yi & TVar yi))
 
-> exPred : LBTm [LambdaBase.ni, LambdaBase.fi,LambdaBase.xi]
+> exPred : LBTm []
 > exPred = (\ ni . (\ fi . (\ xi . TVar ni & (\ gi . (\ hi . TVar gi & TVar fi)) & (\ ui . TVar xi) & (\ ui . TVar ui))))
 
+> exY : LBTm []
+> exY = (\ xi . (\yi . TVar xi & TVar yi & TVar xi)) & (\yi . (\xi . TVar yi & (TVar xi & TVar yi & TVar xi)))
 
-> bt2 : Comb KS -> Comb KS
+> bt2 : Reduce a => Comb a -> Comb a
 > bt2 c = c # Var xi # Var yi
 
-> bt3 : Comb KS -> Comb KS
+> bt3 : Reduce a => Comb a -> Comb a
 > bt3 c = c # Var xi # Var yi # Var zi
 
 > r1_b : Comb KS
@@ -193,7 +194,7 @@ Simple untyped lambda calculus without free variables
 > tc1_c = Refl
 
 > r1_w : Comb KS
-> r1_w = bracketAbstractKS LambdaBase.exW
+> r1_w = bracketAbstractKS exW
 
 > t1_w : LambdaBase.r1_w = :S # :S # (:K # (:S # :K # :K))
 > t1_w = Refl
@@ -202,10 +203,43 @@ Simple untyped lambda calculus without free variables
 > tc1_w = Refl
 
 > r1_pred : Comb KS
-> r1_pred = bracketAbstractKS LambdaBase.exPred
+> r1_pred = bracketAbstractKS exPred
 
 > t1_pred : LambdaBase.r1_pred = :S # (:S # (:K # :S) # (:S # (:K # (:S # (:K # :S))) # (:S # (:S # (:K # :S) # (:S # (:K # (:S # (:K # :S)))
 >                             # (:S # (:K # (:S # (:K # :K))) # (:S # (:S # (:K # :S) # :K) # (:K # (:S # (:K # (:S # (:K # :K))) # (:S # (:K #
 >                                (:S # (:S # :K # :K))) # :K))))))) # (:K # (:K # :K))))) # (:K # (:K # (:K # (:S # :K # :K))))
-
 > t1_pred = Refl
+
+> r2_b : Comb KSIBC
+> r2_b = bracketAbstractKSIBC exB
+
+> t2_b : LambdaBase.r2_b = :B
+> t2_b = Refl
+
+> tc2_b : sr (LambdaBase.bt3 LambdaBase.r2_b) = Just (Var LambdaBase.xi # (Var LambdaBase.yi # Var LambdaBase.zi))
+> tc2_b = Refl
+
+> r2_c : Comb KSIBC
+> r2_c = bracketAbstractKSIBC LambdaBase.exC
+
+> t2_c : LambdaBase.r2_c = :C # (:B # :B # :S) # :K
+> t2_c = Refl
+
+> tc2_c : sr (LambdaBase.bt3 LambdaBase.r2_c) = Just (Var LambdaBase.xi # Var LambdaBase.zi # Var LambdaBase.yi)
+> tc2_c = Refl
+
+> r2_w : Comb KSIBC
+> r2_w = bracketAbstractKSIBC LambdaBase.exW
+
+> t2_w : LambdaBase.r2_w = :C # :S # :I
+> t2_w = Refl
+
+> tc2_w : sr (LambdaBase.bt2 LambdaBase.r2_w) = Just (Var LambdaBase.xi # Var LambdaBase.yi # Var LambdaBase.yi)
+> tc2_w = Refl
+
+> r2_pred : Comb KSIBC
+> r2_pred = bracketAbstractKSIBC LambdaBase.exPred
+
+> t2_pred : LambdaBase.r2_pred = :C # (:B # :C # (:B # (:B # :C) # (:C # (:B # :C # (:B # (:B # :B) #
+>             (:C # :B # (:B # (:B # :K) # (:C # :I))))) # :K))) # :I
+> t2_pred = Refl
