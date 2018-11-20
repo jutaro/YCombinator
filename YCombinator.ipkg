@@ -25,7 +25,7 @@ modules    = Other,
 
 
              BinaryTree,
-             GenComb,  
+             RankComb,  
              LambdaBase
 
 

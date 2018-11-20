@@ -10,7 +10,7 @@ LambdaBase.lidr -- Simple untyped lambda calculus, which can be compiled to comb
 > import CombinatorCompProp
 > import SimReductionComp
 > import Reduction
-> import GenComb
+> import RankComb
 
 > %access public export
 > %default total

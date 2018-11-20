@@ -1,6 +1,6 @@
-= GenComb : Generation of binary trees
+= RankComb : Generation of binary trees
 
-> module GenComb
+> module RankComb
 
 > import BinaryTree
 > import Combinator
@@ -76,13 +76,13 @@
 
 ==== Tests
 
-> testRankBWCK : map GenComb.rankBWCK (map GenComb.unrankBWCK [295..300]) = [295..300]
+> testRankBWCK : map RankComb.rankBWCK (map RankComb.unrankBWCK [295..300]) = [295..300]
 > testRankBWCK = Refl
 
-> testRankKS : map GenComb.rankKS (map GenComb.unrankKS [295..300]) = [295..300]
+> testRankKS : map RankComb.rankKS (map RankComb.unrankKS [295..300]) = [295..300]
 > testRankKS = Refl
 
-> testRankKSIBC : map GenComb.rankKSIBC (map GenComb.unrankKSIBC [295..300]) = [295..300]
+> testRankKSIBC : map RankComb.rankKSIBC (map RankComb.unrankKSIBC [295..300]) = [295..300]
 > testRankKSIBC = Refl
 
 > lemmaRank1 : {n:Int} -> (c : Comb BWCK ** c = (unrankBWCK n) -> n = rankBWCK c)

@@ -74,20 +74,29 @@
 === Ranking and unranking
 
 We map binary trees to non-neg­a­tive inte­gers.
+right are the even bits, left the uneven bits
 
 > splitnum : {default 0 left : Int} -> {default 0 right : Int} -> {default 1 spot : Int} -> Int -> (Int,Int)
 > splitnum {left} {right} 0 = (left, right)
 > splitnum {left} {right} {spot} num =
->   let left'  = if num .&. 2 == 2 then left .|. spot else left
->       right' = if num .&. 1 == 1 then right .|. spot else right
+>   let left'  = if num .&. 1 == 1 then left .|. spot else left
+>       right' = if num .&. 2 == 2 then right .|. spot else right
 >   in splitnum {left = left'} {right = right'} {spot = shiftL spot 1} (assert_smaller num (shiftR num 2))
 
 > combnum : {default 0 acc : Int} -> {default 1 spot : Int} -> Int -> Int -> Int
 > combnum {acc} 0 0 = acc
 > combnum {acc} {spot} l r =
->   let a'  = if r .&. 1 == 1 then acc .|. spot else acc
->       a'' = if l .&. 1 == 1 then a' .|. (shiftL spot 1) else a'
+>   let a'  = if l .&. 1 == 1 then acc .|. spot else acc
+>       a'' = if r .&. 1 == 1 then a' .|. (shiftL spot 1) else a'
 >   in combnum {acc = a''} {spot = shiftL spot 2} (assert_smaller l (shiftR l 1)) (assert_smaller r (shiftR r 1))
+
+
+> generateAll: (Eq a, Show a) => a -> Nat -> List (BinaryTree a)
+> generateAll ele Z = [BLeaf ele]
+> generateAll ele (S n) =
+>   concatMap (\ i => [(BNode left right) | right  <- generateAll ele (assert_smaller (S n) i),
+>                                           left   <- generateAll ele (assert_smaller (S n) (minus n i))])
+>             [Z .. n]
 
 > unrank : (Show a, Eq a) => a -> Int -> BinaryTree a
 > unrank a 0 = BLeaf a
@@ -269,7 +278,7 @@ We map binary trees to non-neg­a­tive inte­gers.
 
 ==== Tests
 
-> testRank : rank (unrank 0 300) = 300
+> testRank : and (map (\ i => rank (unrank 0 i) == i) [100 .. 130]) = True
 > testRank = Refl
 
 > exTree : BinaryTree Int
