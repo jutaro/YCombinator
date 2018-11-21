@@ -90,12 +90,12 @@ right are the even bits, left the uneven bits
 >       a'' = if r .&. 1 == 1 then a' .|. (shiftL spot 1) else a'
 >   in combnum {acc = a''} {spot = shiftL spot 2} (assert_smaller l (shiftR l 1)) (assert_smaller r (shiftR r 1))
 
-
-> generateAll: (Eq a, Show a) => a -> Nat -> List (BinaryTree a)
-> generateAll ele Z = [BLeaf ele]
-> generateAll ele (S n) =
->   concatMap (\ i => [(BNode left right) | right  <- generateAll ele (assert_smaller (S n) i),
->                                           left   <- generateAll ele (assert_smaller (S n) (minus n i))])
+> ||| Generate all tree structures with a certain node size, all leafes have the same content
+> generateTrees: (Eq a, Show a) => a -> Nat -> List (BinaryTree a)
+> generateTrees ele Z = [BLeaf ele]
+> generateTrees ele (S n) =
+>   concatMap (\ i => [(BNode left right) | right  <- generateTrees ele (assert_smaller (S n) i),
+>                                           left   <- generateTrees ele (assert_smaller (S n) (minus n i))])
 >             [Z .. n]
 
 > unrank : (Show a, Eq a) => a -> Int -> BinaryTree a

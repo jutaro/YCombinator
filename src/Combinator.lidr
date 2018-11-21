@@ -33,7 +33,7 @@
 > (#) = App
 
 > implementation Eq base => Eq (Comb base) where
->   (PrimComb _ a) == (PrimComb _ b) = a == b
+>   (PrimComb a _) == (PrimComb b _) = a == b
 >   (App a b)    == (App c d)    = a == c && b == d
 >   (Var n1)     == (Var n2)     = n1 == n2
 >   _            == _            = False
@@ -42,6 +42,17 @@
 >   showPrec d (PrimComb c _) = show c
 >   showPrec d (Var n)   = show n
 >   showPrec d (App a b) = showParens (d > Open) (showPrec Open a ++ " # " ++ showPrec App b)
+
+> -- Counts the nodes of a combinator
+> combSize : Comb base -> Int
+> combSize (App l r) = 1 + combSize l + combSize r
+> combSize _ = 0
+
+> ||| Number of binary trees with n internal nodes is:
+> catalan : Integer -> Integer
+> catalan 0 = 0
+> catalan 1 = 1
+> catalan n = assert_total ((2 * (2 * n - 1) * catalan (n - 1)) `div` (n + 1))
 
 > -- this is a specialized version of `appInjective` below
 > combinatorExtensionality : {a, b : Comb base} -> (x : Comb base) -> Reduce base => a # x = b # x -> a = b

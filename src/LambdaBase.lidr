@@ -6,6 +6,7 @@ LambdaBase.lidr -- Simple untyped lambda calculus, which can be compiled to comb
 > import Data.List
 > import BaseKS
 > import BaseKSIBC
+> import BaseKSBC
 > import Combinator
 > import CombinatorCompProp
 > import SimReductionComp
@@ -152,6 +153,56 @@ Simple untyped lambda calculus without free variables
 >                                   bracketAbstractKSIBC (assert_smaller (TApp l r) r)
 > bracketAbstractKSIBC (TVar id) = Var id
 
+
+
+> bracketAbstractKSBC' : Id -> Comb KSBC -> Comb KSBC
+> bracketAbstractKSBC' id v@(Var id2) =
+>   if id == id2
+>     then :S # :K # :K
+>     else :K # v
+> bracketAbstractKSBC' id p@(PrimComb _ _) = :K # p
+> bracketAbstractKSBC' id t@(App l r) =
+>   if r == Var id && not (occursInC id l)
+>     then l
+>     else if not (occursInC id t)
+>       then :K # t
+>       else if not (occursInC id l)
+>         then :B # l # bracketAbstractKSBC' id r
+>         else if not (occursInC id r)
+>           then :C # bracketAbstractKSBC' id l # r
+>           else :S # bracketAbstractKSBC' id l # bracketAbstractKSBC' id r
+
+> bracketAbstractKSBC : LBTm vars -> Comb KSBC
+> bracketAbstractKSBC (TAbs id t) =
+>   if not (occursInL id t)
+>       -- K
+>     then :K # (bracketAbstractKSBC (assert_smaller (TAbs id t) t))
+>     else case t of
+>       -- I
+>       (TVar _) => :S # :K # :K -- since id occurs here it must be identity
+>       (TApp tl (TVar id2)) =>
+>         if id == id2
+>           then if not (occursInL id tl)
+>       --Eta
+>                   then assert_total (bracketAbstractKSBC (assert_smaller (TAbs id t) tl))
+>                   else :S # bracketAbstractKSBC (assert_smaller (TAbs id t) (TAbs id tl)) # (:S # :K # :K)
+>           else :S # bracketAbstractKSBC (assert_smaller (TAbs id t) (TAbs id tl)) # (:K # Var id2)
+>       (TApp tl tr) =>
+>       -- S
+>         if not (occursInL id tl)
+>           then :B # bracketAbstractKSBC (assert_smaller (TAbs id t) tl)
+>                   # bracketAbstractKSBC (assert_smaller (TAbs id t) (TAbs id tr))
+>           else if not (occursInL id tr)
+>             then :C # bracketAbstractKSBC  (assert_smaller (TAbs id t) (TAbs id tl)) #
+>                       bracketAbstractKSBC (assert_smaller (TAbs id t) tr)
+>             else :S # bracketAbstractKSBC (assert_smaller (TAbs id t) (TAbs id tl)) #
+>                       bracketAbstractKSBC (assert_smaller (TAbs id t) (TAbs id tr))
+>       -- Nested Abstracts
+>       (TAbs id2 rt) =>  bracketAbstractKSBC' id (bracketAbstractKSBC (assert_smaller (TAbs id t) t))
+> bracketAbstractKSBC (TApp l r) = bracketAbstractKSBC (assert_smaller (TApp l r) l) #
+>                                   bracketAbstractKSBC (assert_smaller (TApp l r) r)
+> bracketAbstractKSBC (TVar id) = Var id
+
 -- Tests
 
 > exB : LBTm []
@@ -243,3 +294,39 @@ Simple untyped lambda calculus without free variables
 > t2_pred : LambdaBase.r2_pred = :C # (:B # :C # (:B # (:B # :C) # (:C # (:B # :C # (:B # (:B # :B) #
 >             (:C # :B # (:B # (:B # :K) # (:C # :I))))) # :K))) # :I
 > t2_pred = Refl
+
+
+> r3_b : Comb KSBC
+> r3_b = bracketAbstractKSBC exB
+
+> t3_b : LambdaBase.r3_b = :B
+> t3_b = Refl
+
+> tc3_b : sr (LambdaBase.bt3 LambdaBase.r3_b) = Just (Var LambdaBase.xi # (Var LambdaBase.yi # Var LambdaBase.zi))
+> tc3_b = Refl
+
+> r3_c : Comb KSBC
+> r3_c = bracketAbstractKSBC LambdaBase.exC
+
+> t3_c : LambdaBase.r3_c = :C # (:B # :B # :S) # :K
+> t3_c = Refl
+
+> tc3_c : sr (LambdaBase.bt3 LambdaBase.r3_c) = Just (Var LambdaBase.xi # Var LambdaBase.zi # Var LambdaBase.yi)
+> tc3_c = Refl
+
+> r3_w : Comb KSBC
+> r3_w = bracketAbstractKSBC LambdaBase.exW
+
+> t3_w : LambdaBase.r3_w = :C # :S # (:S # :K # :K)
+> t3_w = Refl
+
+> tc3_w : sr (LambdaBase.bt2 LambdaBase.r3_w) = Just (Var LambdaBase.xi # Var LambdaBase.yi # Var LambdaBase.yi)
+> tc3_w = Refl
+
+> r3_pred : Comb KSBC
+> r3_pred = bracketAbstractKSBC LambdaBase.exPred
+
+> -- size 24
+> t3_pred : LambdaBase.r3_pred = :C # (:B # :C # (:B # (:B # :C) # (:C # (:B # :C # (:B # (:B # :B) # (:C # :B # (:B # (:B # :K) # (:C # (:S # :K # :K)))))) # :K))) # (:S # :K # :K)
+
+> t3_pred = Refl
