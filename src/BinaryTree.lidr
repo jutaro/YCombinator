@@ -107,21 +107,38 @@ right are the even bits, left the uneven bits
 >     select []        = []
 >     select (x :: xs) = (x, xs) :: [(y, x::ys) | (y,ys) <- select xs]
 
--- > ||| Generate all tree structures with a certain node size, with all possible permutations of the leafes given
--- > generateTreesPerm: (Eq a, Show a) => List a -> Nat -> List (BinaryTree a)
--- > generateTreesPerm eles Z = map BLeaf eles
--- > generateTreesPerm eles (S n) =
--- >   let allTrees = concatMap (\ i => [(BNode left right) | right  <- generateTreesPerm (head ele) (assert_smaller (S n) i),
--- >                                           left   <- generateTreesPerm (head ele) (assert_smaller (S n) (minus n i))])
--- >             [Z .. n]
--- >       allPerm = permutations eles
--- >   in concatMap (\ tree => map (\ perm => fst (decorateTree tree perm)) allPerm) allTrees
---
--- > decorateTree : BinaryTree a -> List a -> (BinaryTree a, List a)
--- > decorateTree (BLeaf oe) [ne] = (Leaf ne, [])
--- > decorateTree (BNode l r) decos =
--- >   let (newLeft, newDecos) = decorateTree l decos
--- >   in  decorateTree r newDecos
+> -- | All combinations of a list.
+> combinations : Nat -> List a -> List (List a)
+> combinations n l = [x| x <- sequence (replicate n l)]
+
+> decorateTree : (b : BinaryTree a) -> (l : List a) -> BinaryTree a
+> decorateTree (BLeaf oe) (ne ::_) = BLeaf ne
+> decorateTree (BNode l r) decos =
+>   let newLeft = decorateTree l (take (leafSize l) decos)
+>       newRight = decorateTree r (drop (leafSize l) decos)
+>   in  BNode newLeft newRight
+> decorateTree a [] = a
+
+> ||| Generate all tree structures with a certain node size, with all possible permutations of the leafes given
+> generateTreesPerm: (Eq a, Show a) => (l : List a) -> (n : Nat) -> List (BinaryTree a)
+> generateTreesPerm eles Z = map BLeaf eles
+> generateTreesPerm eles@(h :: _) (S n) =
+>   let allTrees = concatMap
+>         (\ i => [(BNode left right) | right  <- generateTrees h (assert_smaller (S n) i),
+>                                       left   <- generateTrees h (assert_smaller (S n) (minus n i))])
+>             [Z .. n]
+>       allPerm = permutations eles
+>   in concatMap (\ tree => map (\ perm => decorateTree tree perm) allPerm) allTrees
+> generateTreesPerm [] _ = [] -- TODO: Excluding impossible does not work as expected
+
+> ||| Generate all tree structures with a certain node size, with all possible permutations of the leafes given
+> generateTreesComb: (Eq a, Show a) => (l : List a) -> (n : Nat) -> List (BinaryTree a)
+> generateTreesComb eles Z = map BLeaf eles
+> generateTreesComb eles@(h :: _) (S n) =
+>   let allTrees = generateTrees h (S n)
+>       allComb = combinations (S n + 1) eles
+>   in concatMap (\ tree => map (\ comb => decorateTree tree comb) allComb) allTrees
+> generateTreesComb [] _ = []
 
 > unrank : (Show a, Eq a) => a -> Int -> BinaryTree a
 > unrank a 0 = BLeaf a
