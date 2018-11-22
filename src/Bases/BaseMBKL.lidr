@@ -1,12 +1,12 @@
 = BaseMBKL : A base with combinators M, B, K and L
 
-> module BaseMBKL
+> module Bases.BaseMBKL
 
 > import Combinator
 > import Reduction
 > import RevReduction
 > import Decidable.Equality
-> import Other
+> import Lib.Other
 
 > %access public export
 > %default total

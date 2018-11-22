@@ -2,8 +2,8 @@
 
 > module BinaryTree
 
-> import Other
-> import Functions
+> import Lib.Other
+> import Lib.Functions
 > import Decidable.Equality
 
 > %access public export
@@ -97,6 +97,31 @@ right are the even bits, left the uneven bits
 >   concatMap (\ i => [(BNode left right) | right  <- generateTrees ele (assert_smaller (S n) i),
 >                                           left   <- generateTrees ele (assert_smaller (S n) (minus n i))])
 >             [Z .. n]
+
+> -- | All permutations of a list.
+> permutations : List a -> List (List a)
+> permutations [] = [[]]
+> permutations xs = [y :: zs | (y, ys) <- select xs, zs <- permutations (assert_smaller xs ys)]
+>   where
+>     select : List a -> List (a, List a)
+>     select []        = []
+>     select (x :: xs) = (x, xs) :: [(y, x::ys) | (y,ys) <- select xs]
+
+-- > ||| Generate all tree structures with a certain node size, with all possible permutations of the leafes given
+-- > generateTreesPerm: (Eq a, Show a) => List a -> Nat -> List (BinaryTree a)
+-- > generateTreesPerm eles Z = map BLeaf eles
+-- > generateTreesPerm eles (S n) =
+-- >   let allTrees = concatMap (\ i => [(BNode left right) | right  <- generateTreesPerm (head ele) (assert_smaller (S n) i),
+-- >                                           left   <- generateTreesPerm (head ele) (assert_smaller (S n) (minus n i))])
+-- >             [Z .. n]
+-- >       allPerm = permutations eles
+-- >   in concatMap (\ tree => map (\ perm => fst (decorateTree tree perm)) allPerm) allTrees
+--
+-- > decorateTree : BinaryTree a -> List a -> (BinaryTree a, List a)
+-- > decorateTree (BLeaf oe) [ne] = (Leaf ne, [])
+-- > decorateTree (BNode l r) decos =
+-- >   let (newLeft, newDecos) = decorateTree l decos
+-- >   in  decorateTree r newDecos
 
 > unrank : (Show a, Eq a) => a -> Int -> BinaryTree a
 > unrank a 0 = BLeaf a

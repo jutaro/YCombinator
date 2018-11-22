@@ -4,9 +4,9 @@
 
 > import Combinator
 > import Reduction
-> import Relation
-> import BaseBWCK
-> import Id
+> import Lib.Relation
+> import Bases.BaseBWCK
+> import Lib.Id
 > import Data.List
 
 > %access public export

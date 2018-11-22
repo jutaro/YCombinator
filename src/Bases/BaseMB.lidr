@@ -1,11 +1,11 @@
 = BaseMB : A base with combinators M and B
 
-> module BaseMB
+> module Bases.BaseMB
 
 > import Combinator
 > import Reduction
 > import Decidable.Equality
-> import Other
+> import Lib.Other
 
 > %access public export
 > %default total

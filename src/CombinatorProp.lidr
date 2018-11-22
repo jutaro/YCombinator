@@ -5,11 +5,11 @@
 > import Decidable.Equality
 > import Control.Isomorphism
 > import Combinator
-> import Relation
+> import Lib.Relation
 > import Reduction
-> import BaseKS
-> import Other
-> import Id
+> import Bases.BaseKS
+> import Lib.Other
+> import Lib.Id
 > import CombinatorCompProp
 
 > %access public export

@@ -1,6 +1,6 @@
 = Relation : Relations with Multi Pathes
 
-> module Relation
+> module Lib.Relation
 
 
 > %access public export

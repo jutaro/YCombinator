@@ -3,7 +3,7 @@
 > module RevReduction
 
 > import Decidable.Equality
-> import Relation
+> import Lib.Relation
 > import Combinator
 > import Reduction
 

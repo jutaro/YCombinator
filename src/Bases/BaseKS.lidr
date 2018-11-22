@@ -1,11 +1,11 @@
 = BaseKS : A base with combinators K and S
 
-> module BaseKS
+> module Bases.BaseKS
 
 > import Combinator
 > import Reduction
 > import Decidable.Equality
-> import Other
+> import Lib.Other
 
 > %access public export
 > %default total

@@ -3,7 +3,7 @@
 > module Combinator
 
 > import Decidable.Equality
-> import Id
+> import Lib.Id
 
 > %access public export
 > %default total

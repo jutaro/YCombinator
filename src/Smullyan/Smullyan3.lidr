@@ -1,13 +1,13 @@
 Smullyan3 : Birds Galore: Exercises from Mock a Mockingbird (Chapter 11)
 
-> module Smullyan3
+> module Smullyan.Smullyan3
 
-> import Relation
+> import Lib.Relation
 > import Combinator
 > import Reduction
 > import RevReduction
-> import BaseMBKL
-> import BaseBWCK
+> import Bases.BaseMBKL
+> import Bases.BaseBWCK
 
 > %access public export
 > %default total

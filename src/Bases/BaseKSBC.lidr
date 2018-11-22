@@ -1,12 +1,12 @@
 = Base KSBC : A base with combinators K, S, I, B, W
 
-> module BaseKSBC
+> module Bases.BaseKSBC
 
 > import Combinator
 > import Reduction
 > import RevReduction
 > import Decidable.Equality
-> import Other
+> import Lib.Other
 
 > %access public export
 > %default total

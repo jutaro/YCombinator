@@ -2,11 +2,11 @@ LambdaBase.lidr -- Simple untyped lambda calculus, which can be compiled to comb
 
 > module LambdaBase
 
-> import Id
+> import Lib.Id
 > import Data.List
-> import BaseKS
-> import BaseKSIBC
-> import BaseKSBC
+> import Bases.BaseKS
+> import Bases.BaseKSIBC
+> import Bases.BaseKSBC
 > import Combinator
 > import CombinatorCompProp
 > import SimReductionComp

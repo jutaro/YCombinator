@@ -5,8 +5,8 @@
 > import Combinator
 > import Reduction
 > import Path
-> import BaseKS
-> import Id
+> import Bases.BaseKS
+> import Lib.Id
 
 
 > %access public export

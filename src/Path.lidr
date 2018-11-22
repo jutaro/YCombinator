@@ -3,13 +3,13 @@
 > module Path
 
 > import Decidable.Equality
-> import Relation
+> import Lib.Relation
 > import Combinator
 > import CombinatorCompProp
 > import Reduction
-> import BaseKS
+> import Bases.BaseKS
 > import Data.List.Quantifiers
-> import Id
+> import Lib.Id
 
 > %access public export
 > %default total

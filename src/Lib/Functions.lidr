@@ -1,7 +1,6 @@
 = Functions : Relations with Multi Pathes
 
-> module Functions
-
+> module Lib.Functions
 
 > %access public export
 > %default total

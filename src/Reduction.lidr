@@ -3,10 +3,10 @@
 > module Reduction
 
 > import Decidable.Equality
-> import Relation
+> import Lib.Relation
 > import Combinator
 > import Data.List.Quantifiers
-> import Id
+> import Lib.Id
 
 
 > %access public export

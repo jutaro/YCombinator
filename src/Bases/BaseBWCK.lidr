@@ -1,12 +1,12 @@
 = BaseBWCK : A base with combinators B, W, C and K
 
-> module BaseBWCK
+> module Bases.BaseBWCK
 
 > import Combinator
 > import Reduction
 > import RevReduction
 > import Decidable.Equality
-> import Other 
+> import Lib.Other
 
 > %access public export
 > %default total

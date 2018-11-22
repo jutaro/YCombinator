@@ -1,12 +1,12 @@
 Smullyan2 : Is there a sage bird? : Exercises from Mock a Mockingbird (Chapter 10)
 
-> module Smullyan2
+> module Smullyan.Smullyan2
 
-> import Relation
+> import Lib.Relation
 > import Combinator
 > import Reduction
 > import RevReduction
-> import BaseMBKL
+> import Bases.BaseMBKL
 
 > %access public export
 > %default total

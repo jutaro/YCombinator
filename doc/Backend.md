@@ -21,7 +21,7 @@ Bei diesem Beispiel wäre KSBC das Optimum
 2 ^ 31 = 2147483648 würde für 2 Milliarden Entries reichen (68 GByte Lookup table)
 
 Welche Node size wird etwa abgedeckt:
-128 MB = 128000000 Byte / 4 = 128.000.000 Entries = 128 Millionen entries
+128 MB = 128000000  / 4 = 32.000.000 Entries = 32 Millionen entries
 bei 4 Kombinatoren bis node size 9 - 7
 bei 2 Kombinatoren               10 - 11
 

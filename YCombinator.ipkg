@@ -1,9 +1,9 @@
 package YCombinator
 
-modules    = Other,
-             Functions,
-             Relation,
-             Id,
+modules    = Lib.Other,
+             Lib.Relation,
+             Lib.Id,
+             Lib.Functions,
 
              Combinator,
              Reduction,
@@ -13,23 +13,23 @@ modules    = Other,
              Path,
 --             SimReduction,
              SimReductionComp,
-             BaseKS,
-             BaseMB,
-             BaseMBKL,
-             BaseBWCK,
-             Smullyan1,
-             Smullyan2,
-             Smullyan3,
-             Smullyan4,
-             Smullyan5,
 
+             Bases.BaseKS,
+             Bases.BaseMB,
+             Bases.BaseMBKL,
+             Bases.BaseBWCK,
+
+             Smullyan.Smullyan1,
+             Smullyan.Smullyan2,
+             Smullyan.Smullyan3,
+             Smullyan.Smullyan4,
+             Smullyan.Smullyan5,
 
              BinaryTree,
-             RankComb,  
+             RankComb,
+             CombLookup,
+
              LambdaBase
-
-
-
 
 main       = Smullyan5
 

@@ -4,10 +4,10 @@
 
 > import BinaryTree
 > import Combinator
-> import BaseKS
-> import BaseKSBC
-> import BaseBWCK
-> import Id
+> import Bases.BaseKS
+> import Bases.BaseKSBC
+> import Bases.BaseBWCK
+> import Lib.Id
 > import Data.Fin
 
 > %access public export
@@ -40,5 +40,20 @@
 > testRankKSBC : map RankComb.rankKSBC (map RankComb.unrankKSBC [295..300]) = [295..300]
 > testRankKSBC = Refl
 
+> testRankKSBCNub : length (nub (map RankComb.unrankKSBC [295..394])) = 100
+> testRankKSBCNub = Refl
+
+-- > testRankKSBCAll : length (filter (\c => combSize c == 2) (map RankComb.unrankKSBC [0 .. 500])) = 128
+-- > testRankKSBCAll = Refl
+
 > -- lemmaRank1 : {n:Int} -> (c : Comb BWCK ** c = (unrankBWCK n) -> n = rankBWCK c)
 > -- lemmaRank1 {n} = (unrankBWCK n ** (\ Refl => ?hole))
+
+-- > testRankKSBC : and (map (\ i => rankKSBC (unrankKSBC i) == i) [100 .. 130]) = True
+-- > testRankKSBC = Refl
+
+> exTree : BinaryTree Int
+> exTree = BNode (BNode (BLeaf 1) (BLeaf 2))(BNode (BLeaf 3) (BLeaf 4))
+
+LemmaSplitnumRank : a = (App l r) -> e = rank a -> splinum e = (rank l, rank r)
+LemmaCombnumRank : a = (App l r) -> e = rank a -> rank a = combnum l r

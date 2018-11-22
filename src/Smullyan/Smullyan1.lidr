@@ -1,12 +1,12 @@
 Smullyan : Exercises from Mock a Mockingbird (Chapter 9)
 
-> module Smullyan1
+> module Smullyan.Smullyan1
 
 > import Combinator
 > import Reduction
-> import BaseMB
-> import BaseMBKL
-> import Relation
+> import Bases.BaseMB
+> import Bases.BaseMBKL
+> import Lib.Relation
 
 
 > %access public export

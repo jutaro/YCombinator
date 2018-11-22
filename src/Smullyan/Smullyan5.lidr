@@ -1,14 +1,14 @@
 Smullyan5 : A Galery of Sage Birds? : Exercises from Mock a Mockingbird (Chapter 13)
 
-> module Smullyan5
+> module Smullyan.Smullyan5
 
-> import Relation
+> import Lib.Relation
 > import Combinator
 > import Reduction
 > import RevReduction
-> import BaseBWCK
-> import Smullyan3
-> import Smullyan4
+> import Bases.BaseBWCK
+> import Smullyan.Smullyan3
+> import Smullyan.Smullyan4
 
 > %access public export
 > %default total

@@ -3,7 +3,7 @@
 > module CombLookup
 
 > import Combinator
-> import BaseKSIBC
+> import Bases.BaseKSBC
 > import RankComb
 > import SimReductionComp
 > import System
@@ -13,12 +13,12 @@
 
 > getLineFor : Int -> (Int, Int, String, String)
 > getLineFor n =
->   let comb = unrankKSIBC n
+>   let comb = unrankKSBC n
 >       condNewComb = sr comb
 >       newNum =  case condNewComb of
 >                   Nothing => -2 -- loop or unfinished
 >                   Just c  =>
->                     let ranked = rankKSIBC c
+>                     let ranked = rankKSBC c
 >                     in  if ranked == n
 >                           then -1 -- normal form
 >                           else ranked

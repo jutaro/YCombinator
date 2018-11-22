@@ -1,12 +1,12 @@
 Smullyan4 : Mockingbirds, Warblers and Starlings : Exercises from Mock a Mockingbird (Chapter 12)
 
-> module Smullyan4
+> module Smullyan.Smullyan4
 
-> import Relation
+> import Lib.Relation
 > import Combinator
 > import Reduction
-> import BaseBWCK
-> import Smullyan3
+> import Bases.BaseBWCK
+> import Smullyan.Smullyan3
 
 > %access public export
 > %default total

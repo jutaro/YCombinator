@@ -1,8 +1,8 @@
 = Id : Identifiers or Symbols
 
-> module Id
+> module Lib.Id
 
-> import Other
+> import Lib.Other
 
 > %access public export
 > %default total

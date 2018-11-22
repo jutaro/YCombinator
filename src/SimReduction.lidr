@@ -3,11 +3,11 @@
 > module SimReduction
 
 > import Decidable.Equality
-> import Relation
+> import Lib.Relation
 > import Combinator
 > import CombinatorCompProp
 > import Reduction
-> import BaseKS
+> import Bases.BaseKS
 > import Path
 > import Data.List.Quantifiers
 
