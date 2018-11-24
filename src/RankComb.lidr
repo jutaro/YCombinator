@@ -65,3 +65,5 @@ Take I for 0, and left I's dissapear, as a zero on the left dissapears
 -- > testRankIKSCNub = Refl
 
 -- > length $ filter (\ c => combSize c == 1) (map RankComb.unrankIKSC [0..100])
+
+-- > length $ filter (\ c => combSize c == 1) (map RankComb.unrankIKSC [0..100])
