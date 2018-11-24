@@ -1,59 +1,67 @@
-= RankComb : Generation of binary trees
+ex= RankComb : Generation of binary trees
 
 > module RankComb
 
 > import BinaryTree
 > import Combinator
-> import Bases.BaseKS
-> import Bases.BaseKSBC
-> import Bases.BaseBWCK
+> import Bases.BaseIKSC
 > import Lib.Id
-> import Data.Fin
+> import Lib.Other
 
 > %access public export
 > %default total
 
 === Ranking and unranking
 
-> unrankKSBC : Int -> Comb KSBC
-> unrankKSBC 0 = :K
-> unrankKSBC 1 = :S
-> unrankKSBC 2 = :B
-> unrankKSBC 3 = :C
-> unrankKSBC n =
->   let (ln,rn) = if n < 20 then splitnum (n - 4) else splitnum n
->   in App (unrankKSBC (assert_smaller n ln)) (unrankKSBC (assert_smaller n rn))
+We map combinators to natural numbers in a Quaternary number system.
+Left branches are the even numbers, right starting the rightmost
+e.g 01|11|10|01 |ll|rr|ll|rr split to
+left  = 0110
+right = 1101
 
-> rankKSBC : Comb KSBC -> Int
-> rankKSBC (Var _) = 0 -- should never happen
-> rankKSBC (PrimComb K _) = 0
-> rankKSBC (PrimComb S _) = 1
-> rankKSBC (PrimComb B _) = 2
-> rankKSBC (PrimComb C _) = 3
-> rankKSBC a@(App l@(PrimComb _ _) r@(PrimComb _ _)) =
->   4 + assert_total (combnum (rankKSBC l) (rankKSBC r))
-> rankKSBC a@(App l r) =
->   combnum (rankKSBC (assert_smaller a l)) (rankKSBC (assert_smaller a r))
+> splitnum4 : {default 0 left : Integer} -> {default 0 right : Integer} -> {default 1 spot : Integer} -> Integer -> (Integer,Integer)
+> splitnum4 {left} {right} 0 = (left, right)
+> splitnum4 {left} {right} {spot} num =
+>   let r1 = num .&&. 3
+>       right'  = if r1 /= 0 then right .||. (r1 .<<<. (spot - 1)) else right
+>       num' = num .>>>. 2
+>       l1 = num' .&&. 3
+>       left' = if l1 /= 0 then left .||. (l1 .<<<. (spot - 1)) else left
+>   in splitnum4 {left = left'} {right = right'} {spot = spot + 2} (assert_smaller num (num' .>>>. 2))
+
+> combnum4 : {default 0 acc : Integer} -> {default 1 spot : Integer} -> Integer -> Integer -> Integer
+> combnum4 {acc} 0 0 = acc
+> combnum4 {acc} {spot} l r =
+>   let rc = r .&&. 3
+>       a1  = if rc /= 0 then acc .||. (rc .<<<. (spot - 1)) else acc
+>       lc = l .&&. 3
+>       a2 = if lc /= 0 then a1 .||. (lc .<<<. (spot + 1)) else a1
+>   in combnum4 {acc = a2} {spot = spot + 4} (assert_smaller l (l .>>>. 2)) (assert_smaller r (r .>>>. 2))
+
+Take I for 0, and left I's dissapear, as a zero on the left dissapears
+
+> unrankIKSC : Integer -> Comb IKSC
+> unrankIKSC 0 = :I
+> unrankIKSC 1 = :K
+> unrankIKSC 2 = :S
+> unrankIKSC 3 = :C
+> unrankIKSC n =  let (ln,rn) = splitnum4 n
+>                 in App (unrankIKSC (assert_smaller n ln)) (unrankIKSC (assert_smaller n rn))
+
+> rankIKSC : Comb IKSC -> Integer
+> rankIKSC (Var _) = 0 -- should never happen
+> rankIKSC (PrimComb I _) = 0
+> rankIKSC (PrimComb K _) = 1
+> rankIKSC (PrimComb S _) = 2
+> rankIKSC (PrimComb C _) = 3
+> rankIKSC a@(App l r)    = combnum4 (rankIKSC (assert_smaller a l)) (rankIKSC (assert_smaller a r))
 
 ==== Tests
 
-> testRankKSBC : map RankComb.rankKSBC (map RankComb.unrankKSBC [295..300]) = [295..300]
-> testRankKSBC = Refl
+> testRankIKSC : map RankComb.rankIKSC (map RankComb.unrankIKSC [295..300]) = [295..300]
+> testRankIKSC = Refl
 
-> testRankKSBCNub : length (nub (map RankComb.unrankKSBC [295..394])) = 100
-> testRankKSBCNub = Refl
+-- > testRankIKSCNub : length (nub (map RankComb.unrankIKSC [295..394])) = 100
+-- > testRankIKSCNub = Refl
 
--- > testRankKSBCAll : length (filter (\c => combSize c == 2) (map RankComb.unrankKSBC [0 .. 500])) = 128
--- > testRankKSBCAll = Refl
-
-> -- lemmaRank1 : {n:Int} -> (c : Comb BWCK ** c = (unrankBWCK n) -> n = rankBWCK c)
-> -- lemmaRank1 {n} = (unrankBWCK n ** (\ Refl => ?hole))
-
--- > testRankKSBC : and (map (\ i => rankKSBC (unrankKSBC i) == i) [100 .. 130]) = True
--- > testRankKSBC = Refl
-
-> exTree : BinaryTree Int
-> exTree = BNode (BNode (BLeaf 1) (BLeaf 2))(BNode (BLeaf 3) (BLeaf 4))
-
-LemmaSplitnumRank : a = (App l r) -> e = rank a -> splinum e = (rank l, rank r)
-LemmaCombnumRank : a = (App l r) -> e = rank a -> rank a = combnum l r
+-- > length $ filter (\ c => combSize c == 1) (map RankComb.unrankIKSC [0..100])

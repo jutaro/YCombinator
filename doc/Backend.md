@@ -2,13 +2,15 @@
 == Combinator set
 
 Jeder Kombinator mehr erhöht die Anzahl der zu generierenden Fälle um nodeSize * bisherigeFälle.
-Beispiel 5 Knoten: KS:   42 * (2 ^ 5) = 1344
-Beispiel 5 Knoten: KSBC:   42 * (4 ^ 5) = 43008
-Beispiel 5 Knoten: KSIBC:   42 * (5 ^ 5) = 131250
+Beispiel 5 Knoten: KS:   42 * (2 ^ 6) = 2688
+Beispiel 5 Knoten: KSBC:   42 * (4 ^ 6) = 172032
+Beispiel 5 Knoten: IKSC:   42 * ()
+Beispiel 5 Knoten: KSIBC:   42 * (5 ^ 6) = 656250
 
 Nehmen wir Beispiel predecessor, Anzahl Knoten:
 
 KS: 49 509552245179617138054608572 * (2 ^ 24) = 8548868080663395522443987807895552
+IKSC:                                                             
 KSBC: 24 1289904147324 * (4 ^ 24) =                    363075739827001485944684544
 KSIBC: 20 6564120420 * (5 ^ 24) =                      391252065896987915039062500
 

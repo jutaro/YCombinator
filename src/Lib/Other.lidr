@@ -5,6 +5,23 @@
 > %access public export
 > %default total
 
+
+> infixl 9 .<<.
+> (.<<.) : Int -> Int -> Int
+> (.<<.) = prim__shlInt
+
+> infixl 9 .>>.
+> (.>>.) : Int -> Int -> Int
+> (.>>.) = prim__ashrInt
+
+> infixl 9 .<<<.
+> (.<<<.) : Integer -> Integer -> Integer
+> (.<<<.) = prim__shlBigInt
+
+> infixl 9 .>>>.
+> (.>>>.) : Integer -> Integer -> Integer
+> (.>>>.) = prim__ashrBigInt
+
 > infixl 7 .&.
 > (.&.) : Int -> Int -> Int
 > (.&.) = prim__andInt
@@ -12,6 +29,14 @@
 > infixl 5 .|.
 > (.|.) : Int -> Int -> Int
 > (.|.) = prim__orInt
+
+> infixl 7 .&&.
+> (.&&.) : Integer -> Integer -> Integer
+> (.&&.) = prim__andBigInt
+
+> infixl 5 .||.
+> (.||.) : Integer -> Integer -> Integer
+> (.||.) = prim__orBigInt
 
 > forallToExistence : {xty: Type} -> {pty: xty -> Type} -> ((b : xty) -> Not (pty b)) -> Not (b : xty ** pty b)
 > forallToExistence hyp (b ** p2) = hyp b p2
