@@ -7,6 +7,8 @@ LambdaBase.lidr -- Simple untyped lambda calculus, which can be compiled to comb
 > import Bases.BaseKS
 > import Bases.BaseKSIBC
 > import Bases.BaseKSBC
+> import Bases.BaseIKSC
+> import Bases.BaseTurner
 > import Combinator
 > import CombinatorCompProp
 > import SimReductionComp
@@ -203,6 +205,144 @@ Simple untyped lambda calculus without free variables
 >                                   bracketAbstractKSBC (assert_smaller (TApp l r) r)
 > bracketAbstractKSBC (TVar id) = Var id
 
+== IKSC
+
+> bracketAbstractIKSC' : Id -> Comb IKSC -> Comb IKSC
+> bracketAbstractIKSC' id v@(Var id2) =
+>   if id == id2
+>     then :I
+>     else :K # v
+> bracketAbstractIKSC' id p@(PrimComb _ _) = :K # p
+> bracketAbstractIKSC' id t@(App l r) =
+>   if r == Var id && not (occursInC id l)
+>     then l
+>     else if not (occursInC id t)
+>       then :K # t
+>       else if not (occursInC id l)
+>         then :S # (:K # l) # bracketAbstractIKSC' id r
+>         else if not (occursInC id r)
+>           then :C # bracketAbstractIKSC' id l # r
+>           else :S # bracketAbstractIKSC' id l # bracketAbstractIKSC' id r
+
+> bracketAbstractIKSC : LBTm vars -> Comb IKSC
+> bracketAbstractIKSC (TAbs id t) =
+>   if not (occursInL id t)
+>       -- K
+>     then :K # (bracketAbstractIKSC (assert_smaller (TAbs id t) t))
+>     else case t of
+>       -- I
+>       (TVar _) => :I -- since id occurs here it must be identity
+>       (TApp tl (TVar id2)) =>
+>         if id == id2
+>           then if not (occursInL id tl)
+>       --Eta
+>                   then assert_total (bracketAbstractIKSC (assert_smaller (TAbs id t) tl))
+>                   else :S # bracketAbstractIKSC (assert_smaller (TAbs id t) (TAbs id tl)) # :I
+>           else :S # bracketAbstractIKSC (assert_smaller (TAbs id t) (TAbs id tl)) # (:K # Var id2)
+>       (TApp tl tr) =>
+>       -- S
+>         if not (occursInL id tl)
+>           then :S # (:K # bracketAbstractIKSC (assert_smaller (TAbs id t) tl))
+>                   # bracketAbstractIKSC (assert_smaller (TAbs id t) (TAbs id tr))
+>           else if not (occursInL id tr)
+>             then :C # bracketAbstractIKSC  (assert_smaller (TAbs id t) (TAbs id tl)) #
+>                       bracketAbstractIKSC (assert_smaller (TAbs id t) tr)
+>             else :S # bracketAbstractIKSC (assert_smaller (TAbs id t) (TAbs id tl)) #
+>                       bracketAbstractIKSC (assert_smaller (TAbs id t) (TAbs id tr))
+>       -- Nested Abstracts
+>       (TAbs id2 rt) =>  bracketAbstractIKSC' id (bracketAbstractIKSC (assert_smaller (TAbs id t) t))
+> bracketAbstractIKSC (TApp l r) = bracketAbstractIKSC (assert_smaller (TApp l r) l) #
+>                                   bracketAbstractIKSC (assert_smaller (TApp l r) r)
+> bracketAbstractIKSC (TVar id) = Var id
+
+== Turner
+
+> bracketAbstractTurner' : Id -> Comb Turner -> Comb Turner
+> bracketAbstractTurner' id v@(Var id2) =
+>   if id == id2
+>     then I'
+>     else K' # v
+> bracketAbstractTurner' id p@(PrimComb _ _) = K' # p
+> bracketAbstractTurner' id t@(App(App l r) r2) =
+>   if r2 == Var id && not (occursInC id l)
+>     then (App l r)
+>     else if not (occursInC id t)
+>       then K' # t
+>       else if not (occursInC id l) && not (occursInC id r)
+>         then B2' # l # r # bracketAbstractTurner' id r2
+>         else if not (occursInC id l) && not (occursInC id r2)
+>           then C2' # l # bracketAbstractTurner' id r # r2
+>           else if not (occursInC id l)
+>             then S2' # l # bracketAbstractTurner' id r # bracketAbstractTurner' id r2
+>             else if not (occursInC id (App l r))
+>               then B' # (App l r) # bracketAbstractTurner' id r2
+>               else if not (occursInC id r2)
+>                 then C' # bracketAbstractTurner' id (App l r) # r2
+>                 else S' # bracketAbstractTurner' id (App l r) # bracketAbstractTurner' id r2
+> bracketAbstractTurner' id t@(App l r) =
+>   if r == Var id && not (occursInC id l)
+>     then l
+>     else if not (occursInC id t)
+>       then K' # t
+>       else if not (occursInC id l)
+>         then B' # l # bracketAbstractTurner' id r
+>         else if not (occursInC id r)
+>           then C' # bracketAbstractTurner' id l # r
+>           else S' # bracketAbstractTurner' id l # bracketAbstractTurner' id r
+
+> bracketAbstractTurner : LBTm vars -> Comb Turner
+> bracketAbstractTurner (TAbs id t) =
+>   if not (occursInL id t)
+>       -- K
+>     then K' # (bracketAbstractTurner (assert_smaller (TAbs id t) t))
+>     else case t of
+>       -- I
+>       (TVar _) => I' -- since id occurs here it must be identity
+>       (TApp tl (TVar id2)) =>
+>         if id == id2
+>           then if not (occursInL id tl)
+>       --Eta
+>                   then assert_total (bracketAbstractTurner (assert_smaller (TAbs id t) tl))
+>                   else S' # bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tl)) # I'
+>           else S' # bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tl)) # (:K # Var id2)
+>       (TApp (TApp tl tr) tr2) =>
+>         if not (occursInL id tl) && not (occursInL id tr)
+>           then B2' # bracketAbstractTurner (assert_smaller (TAbs id t) tl) #
+>                      bracketAbstractTurner (assert_smaller (TAbs id t) tr) #
+>                      bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tr2))
+>           else if not (occursInL id tl) && not (occursInL id tr2)
+>             then C2' # bracketAbstractTurner (assert_smaller (TAbs id t) tl) #
+>                        bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tr)) #
+>                        bracketAbstractTurner (assert_smaller (TAbs id t) tr2)
+>             else if not (occursInL id tl)
+>               then S2' # bracketAbstractTurner (assert_smaller (TAbs id t) tl) #
+>                          bracketAbstractTurner (assert_smaller (TAbs id t) tr) #
+>                          bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tr2))
+>               else if not (occursInL id (TApp tl tr))
+>                 then B' # bracketAbstractTurner (assert_smaller (TAbs id t) (TApp tl tr))
+>                         # bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tr2))
+>                   else if not (occursInL id tr2)
+>                     then C' # bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id (TApp tl tr))) #
+>                               bracketAbstractTurner (assert_smaller (TAbs id t) tr2)
+>                     else S' # bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id (TApp tl tr))) #
+>                               bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tr2))
+>       (TApp tl tr) =>
+>       -- S
+>         if not (occursInL id tl)
+>           then B' # bracketAbstractTurner (assert_smaller (TAbs id t) tl)
+>                   # bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tr))
+>           else if not (occursInL id tr)
+>             then C' # bracketAbstractTurner  (assert_smaller (TAbs id t) (TAbs id tl)) #
+>                       bracketAbstractTurner (assert_smaller (TAbs id t) tr)
+>             else S' # bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tl)) #
+>                       bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tr))
+>       -- Nested Abstracts
+>       (TAbs id2 rt) =>  bracketAbstractTurner' id (bracketAbstractTurner (assert_smaller (TAbs id t) t))
+> bracketAbstractTurner (TApp l r) = bracketAbstractTurner (assert_smaller (TApp l r) l) #
+>                                    bracketAbstractTurner (assert_smaller (TApp l r) r)
+> bracketAbstractTurner (TVar id) = Var id
+
+
 -- Tests
 
 > exB : LBTm []
@@ -291,6 +431,8 @@ Simple untyped lambda calculus without free variables
 > r2_pred : Comb KSIBC
 > r2_pred = bracketAbstractKSIBC LambdaBase.exPred
 
+-- size 20
+
 > t2_pred : LambdaBase.r2_pred = :C # (:B # :C # (:B # (:B # :C) # (:C # (:B # :C # (:B # (:B # :B) #
 >             (:C # :B # (:B # (:B # :K) # (:C # :I))))) # :K))) # :I
 > t2_pred = Refl
@@ -330,3 +472,80 @@ Simple untyped lambda calculus without free variables
 > t3_pred : LambdaBase.r3_pred = :C # (:B # :C # (:B # (:B # :C) # (:C # (:B # :C # (:B # (:B # :B) # (:C # :B # (:B # (:B # :K) # (:C # (:S # :K # :K)))))) # :K))) # (:S # :K # :K)
 
 > t3_pred = Refl
+
+
+
+> r4_b : Comb IKSC
+> r4_b = bracketAbstractIKSC exB
+
+> t4_b : LambdaBase.r4_b = :S # (:K # :S) # :K
+> t4_b = Refl
+
+> tc4_b : sr (LambdaBase.bt3 LambdaBase.r4_b) = Just (Var LambdaBase.xi # (Var LambdaBase.yi # Var LambdaBase.zi))
+> tc4_b = Refl
+
+> r4_c : Comb IKSC
+> r4_c = bracketAbstractIKSC LambdaBase.exC
+
+> t4_c : LambdaBase.r4_c = :C # (:S # (:K # :S) # (:S # (:K # :K) # :S)) # :K
+> t4_c = Refl
+
+> tc4_c : sr (LambdaBase.bt3 LambdaBase.r4_c) = Just (Var LambdaBase.xi # Var LambdaBase.zi # Var LambdaBase.yi)
+> tc4_c = Refl
+
+> r4_w : Comb IKSC
+> r4_w = bracketAbstractIKSC LambdaBase.exW
+
+> t4_w : LambdaBase.r4_w = :C # :S # :I
+> t4_w = Refl
+
+> tc4_w : sr (LambdaBase.bt2 LambdaBase.r4_w) = Just (Var LambdaBase.xi # Var LambdaBase.yi # Var LambdaBase.yi)
+> tc4_w = Refl
+
+> r4_pred : Comb IKSC
+> r4_pred = bracketAbstractIKSC LambdaBase.exPred
+
+> -- size 36
+> t4_pred : LambdaBase.r4_pred =
+>   :C # (:S # (:K # :C) # (:S # (:K # (:S # (:K # :C))) #
+>     (:C # (:S # (:K # :C) # (:S # (:K # (:S # (:K # :S)))
+>   # (:S # (:K # (:S # (:K # :K))) # (:C # (:S # (:K # :S) # :K) #
+>   (:S # (:K # (:S # (:K # :K))) # (:C # :I)))))) # :K))) # :I
+> t4_pred = Refl
+
+
+
+> r5_b : Comb Turner
+> r5_b = bracketAbstractTurner exB
+
+> t5_b : LambdaBase.r5_b = B'
+> t5_b = Refl
+
+> tc5_b : sr (bt3 LambdaBase.r5_b) = Just (Var LambdaBase.xi # (Var LambdaBase.yi # Var LambdaBase.zi))
+> tc5_b = Refl
+
+> r5_c : Comb Turner
+> r5_c = bracketAbstractTurner LambdaBase.exC
+
+> t5_c : LambdaBase.r5_c = C2' # (B2' # S') # I' # K'
+> t5_c = Refl
+
+> tc5_c : sr (LambdaBase.bt3 LambdaBase.r5_c) = Just (Var LambdaBase.xi # Var LambdaBase.zi # Var LambdaBase.yi)
+> tc5_c = Refl
+
+> r5_w : Comb Turner
+> r5_w = bracketAbstractTurner LambdaBase.exW
+
+> t5_w : LambdaBase.r5_w = C2' # S' # I' # I'
+> t5_w = Refl
+
+> tc5_w : sr (LambdaBase.bt2 LambdaBase.r5_w) = Just (Var LambdaBase.xi # Var LambdaBase.yi # Var LambdaBase.yi)
+> tc5_w = Refl
+
+> r5_pred : Comb Turner
+> r5_pred = bracketAbstractTurner LambdaBase.exPred
+
+
+> -- size 14
+> t5_pred : LambdaBase.r5_pred = C2' # C' # (C2' # (C2' # C2') # (C2' # B' # I' # (B2' # B' # K' # (C' # I'))) # K') # I'
+> t5_pred = Refl
