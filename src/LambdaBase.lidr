@@ -337,7 +337,11 @@ Simple untyped lambda calculus without free variables
 >             else S' # bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tl)) #
 >                       bracketAbstractTurner (assert_smaller (TAbs id t) (TAbs id tr))
 >       -- Nested Abstracts
->       (TAbs id2 rt) =>  bracketAbstractTurner' id (bracketAbstractTurner (assert_smaller (TAbs id t) t))
+>       (TAbs id2 rt) =>
+>         let inner = bracketAbstractTurner (assert_smaller (TAbs id t) t)
+>         in case sr inner of
+>               Nothing => bracketAbstractTurner' id inner
+>               Just opt => bracketAbstractTurner' id opt
 > bracketAbstractTurner (TApp l r) = bracketAbstractTurner (assert_smaller (TApp l r) l) #
 >                                    bracketAbstractTurner (assert_smaller (TApp l r) r)
 > bracketAbstractTurner (TVar id) = Var id
@@ -395,6 +399,8 @@ Simple untyped lambda calculus without free variables
 
 > r1_pred : Comb KS
 > r1_pred = bracketAbstractKS exPred
+
+size 49
 
 > t1_pred : LambdaBase.r1_pred = :S # (:S # (:K # :S) # (:S # (:K # (:S # (:K # :S))) # (:S # (:S # (:K # :S) # (:S # (:K # (:S # (:K # :S)))
 >                             # (:S # (:K # (:S # (:K # :K))) # (:S # (:S # (:K # :S) # :K) # (:K # (:S # (:K # (:S # (:K # :K))) # (:S # (:K #
@@ -474,6 +480,7 @@ Simple untyped lambda calculus without free variables
 > t3_pred = Refl
 
 
+1161
 
 > r4_b : Comb IKSC
 > r4_b = bracketAbstractIKSC exB
@@ -483,6 +490,8 @@ Simple untyped lambda calculus without free variables
 
 > tc4_b : sr (LambdaBase.bt3 LambdaBase.r4_b) = Just (Var LambdaBase.xi # (Var LambdaBase.yi # Var LambdaBase.zi))
 > tc4_b = Refl
+
+4835703280714714693503177
 
 > r4_c : Comb IKSC
 > r4_c = bracketAbstractIKSC LambdaBase.exC
@@ -496,6 +505,8 @@ Simple untyped lambda calculus without free variables
 > r4_w : Comb IKSC
 > r4_w = bracketAbstractIKSC LambdaBase.exW
 
+200
+
 > t4_w : LambdaBase.r4_w = :C # :S # :I
 > t4_w = Refl
 
@@ -506,6 +517,7 @@ Simple untyped lambda calculus without free variables
 > r4_pred = bracketAbstractIKSC LambdaBase.exPred
 
 > -- size 36
+
 > t4_pred : LambdaBase.r4_pred =
 >   :C # (:S # (:K # :C) # (:S # (:K # (:S # (:K # :C))) #
 >     (:C # (:S # (:K # :C) # (:S # (:K # (:S # (:K # :S)))
@@ -514,6 +526,7 @@ Simple untyped lambda calculus without free variables
 > t4_pred = Refl
 
 
+3
 
 > r5_b : Comb Turner
 > r5_b = bracketAbstractTurner exB
@@ -524,6 +537,8 @@ Simple untyped lambda calculus without free variables
 > tc5_b : sr (bt3 LambdaBase.r5_b) = Just (Var LambdaBase.xi # (Var LambdaBase.yi # Var LambdaBase.zi))
 > tc5_b = Refl
 
+51554288641
+
 > r5_c : Comb Turner
 > r5_c = bracketAbstractTurner LambdaBase.exC
 
@@ -532,6 +547,8 @@ Simple untyped lambda calculus without free variables
 
 > tc5_c : sr (LambdaBase.bt3 LambdaBase.r5_c) = Just (Var LambdaBase.xi # Var LambdaBase.zi # Var LambdaBase.yi)
 > tc5_c = Refl
+
+14681088
 
 > r5_w : Comb Turner
 > r5_w = bracketAbstractTurner LambdaBase.exW
@@ -545,7 +562,10 @@ Simple untyped lambda calculus without free variables
 > r5_pred : Comb Turner
 > r5_pred = bracketAbstractTurner LambdaBase.exPred
 
+size 14
+3852638599766875127373771886875094237463627785270879291624717458302294058323057242759033107625186853958121897266569705602942829042010378333912749955157625172573703651384694927460600191395774819866760397719560
 
-> -- size 14
 > t5_pred : LambdaBase.r5_pred = C2' # C' # (C2' # (C2' # C2') # (C2' # B' # I' # (B2' # B' # K' # (C' # I'))) # K') # I'
 > t5_pred = Refl
+> {-
+> -}
